@@ -1,23 +1,330 @@
 <?php
 
 /**
+ * secplus.lib.php
+ *
  * SEC+ WebFramework
  * License: GNU GPL v2.0
  * Light MVC PHP Framework designed for security.
  *
- * Authors: i4k   - Tiago Natel de Moura
- *          m0nad - Victor Ramos Mello
+ * @author i4k - Tiago Natel de Moura <tiago4orion@gmail.com>
+ * @author m0nad - Victor Ramos Mello <victornrm@gmail.com>
+ *
+ * @version 1.0
+ * @package secplus-php
  */
 
 namespace SecPlus;
 
+/**
+ * Configuration class
+ * Extend this class to configure your project.
+ *
+ * *NOT* change any default configuration in this class...
+ * Configure your project in the extended class.
+ */
+abstract class Config {
+
+  /* Overload this constant and set the project name */
+  const PROJECT_NAME = "Sec+ WebFramework";
+  /* Overload this constant and set the complete url of the project */
+  const PROJECT_URL = "http://www.secplus.com.br/";
+
+  /**
+   * Singleton configuration instance
+   * @var Config
+   */
+  private static $instance;
+
+  /**
+   * Database configuration
+   * *Not* change the properties here, extend this abstract class and use the getters and setters
+   * to update the database configurations.
+   */
+
+  /**
+   * Database host
+   * @var string
+   */
+  protected $db_host = "127.0.0.1";
+
+  /**
+   * Database user
+   * @var string
+   */
+  protected $db_user = "";
+
+  /**
+   * Database password
+   * @var string
+   */
+  protected $db_pass = "";
+
+  /**
+   * Database driver
+   * @var string
+   */
+  protected $dbms = "mysql";
+
+  /**
+   * Database name
+   * @var string
+   */
+  protected $database = "";
+
+  /**
+   * Salt for hash algorithms
+   * @var string
+   */
+  protected $salt = "Welcome, to the desert of the real";
+  
+  /**
+   * Directory configuration
+   */
+  protected $root_project_dir;
+  protected $lib_dir;
+  protected $controller_dir;
+  protected $model_dir;
+  protected $dao_dir;
+  protected $vo_dir;
+  protected $view_dir;
+  protected $static_dir;
+
+  /**
+   * Safe PHP files to include
+   * Array with every php file that is safe to include/require into project
+   & @var array
+   */
+  protected $view_files = array();
+
+  /**
+   * MVC Configuration
+   */
+
+  /**
+   * Name of the controllers.
+   * This is the name of the uri parameter that invoke the controller.
+   * ex.: http://site]/?$controller=home
+   * @var string
+   */
+  protected $controller_name = "controller";
+
+  /**
+   * Name of the action.
+   * @var string
+   */
+  protected $action_name = "action";
+
+  /**
+   * Get a instance of the configuration class
+   * @return Config
+   */
+  public static function getInstance() {
+    if (isset(self::$instance))
+      return self::$instance;
+    else {
+      $c = get_called_class();
+      self::$instance = new $c();
+      return self::$instance;
+    }
+  }
+
+  /**
+   * Constructor sets up the following properties:
+   * {@link $root_project_dir}
+   * {@link $lib_dir}
+   * {@link $controller_dir}
+   * {@link $model_dir}
+   * {@link $dao_dir}
+   * {@link $vo_dir}
+   * {@link $view_dir}
+   * {@link $static_dir}
+   */
+  private function __construct() {
+    $this->root_project_dir = dirname($_SERVER['SCRIPT_FILENAME']);
+    $this->lib_dir = $this->root_project_dir . '/lib';
+    $this->controller_dir = $this->root_project_dir . '/controller';
+    $this->model_dir = $this->root_project_dir . '/model';
+    $this->dao_dir = $this->model_dir . '/dao';
+    $this->vo_dir = $this->model_dir . '/vo';
+    $this->view_dir = $this->root_project_dir . '/view';
+    $this->static_dir = Config::PROJECT_URL . '/view';
+
+    /**
+     * Security against Local File Include/Disclosure
+     * Every file that need be dinamically loaded into project is included in this array
+     */
+    $this->safe_files = array(
+	/* view */
+	$this->view_dir . '/DashboardView.php',
+        $this->view_dir . '/UserListView.php',
+        $this->view_dir . '/UserAddView.php',
+        $this->view_dir . '/UserEditView.php',
+        $this->view_dir . '/UserDeleteView.php',
+        $this->view_dir . '/ProductView.php',
+        $this->view_dir . '/ProductListView.php',
+        $this->view_dir . '/CategoryView.php',
+
+	/* controllers */
+	$this->controller_dir . '/DashboardController.php',
+        $this->controller_dir . '/UserController.php',
+        $this->controller_dir . '/ProductController.php',
+        $this->controller_dir . '/CategoryController.php',
+
+        /* models */
+        $this->dao_dir . '/UserDAO.php',
+        $this->dao_dir . '/ProductDAO.php',
+        $this->dao_dir . '/CategoryDAO.php',
+        $this->dao_dir . '/UserDAO.php',
+
+        /* Value Objects */
+
+        $this->vo_dir . '/User.php',
+        $this->vo_dir . '/Product.php',
+        $this->vo_dir . '/Category.php'
+
+	);
+  }
+
+  /**
+   * Getter for {@link $db_user}
+   * @return string
+   */
+  public function getDbUser() {
+    return $this->db_user;
+  }
+
+  /**
+   * Getter for {@link $db_pass}
+   * @return string
+   */
+  public function getDbPass() {
+    return $this->db_pass;
+  }
+
+  /**
+   * Getter for {@link $database}
+   * @return string
+   */
+  public function getDatabase() {
+    return $this->database;
+  }
+
+  /**
+   * Getter for {@link $dbms}
+   * @return string
+   */
+  public function getDbms() {
+    return $this->dbms;
+  }
+
+  /**
+   * Getter for {@link $db_host}
+   * @return string
+   */
+  public function getDbHost() {
+         return $this->db_host;
+  }
+
+  /**
+   * Getter for {@link $root_project_dir}
+   * @return string
+   */
+  public function getRootDir() {
+    return $this->root_project_dir;
+  }
+
+  /**
+   * Getter for {@link $lib_dir}
+   * @return string
+   */
+  public function getLibDir() {
+    return $this->lib_dir;
+  }
+
+  /**
+   * Getter for {@link $controller_dir}
+   * @return string
+   */
+  public function getControllerDir() {
+    return $this->controller_dir;
+  }
+
+  /**
+   * Getter for {@link $model_dir}
+   * @return string
+   */
+  public function getModelDir() {
+    return $this->model_dir;
+  }
+
+  /**
+   * Getter for {@link $dao_dir}
+   * @return string
+   */
+  public function getDaoDir() {
+    return $this->dao_dir;
+  }
+
+  /**
+   * Getter for {@link $vo_dir}
+   * @return string
+   */
+  public function getVoDir() {
+    return $this->vo_dir;
+  }
+
+  /**
+   * Getter for {@link $view_dir}
+   * @return string
+   */
+  public function getViewDir() {
+    return $this->view_dir;
+  }
+
+  /**
+   * Getter for {@link $static_dir}
+   * @return string
+   */
+  public function getStaticDir() {
+    return $this->static_dir;
+  }
+
+  /**
+   * Getter for {@link $safe_files}
+   * @return array
+   */
+  public function getSafeFiles() {
+    return $this->safe_files;
+  }
+
+  /**
+   * Getter for {@link $controller_name}
+   * @return string
+   */
+  public function getControllerName() {
+      return $this->controller_name;
+  }
+  
+  /**
+   * Getter for {@link $action_name}
+   * @return string
+   */
+  public function getActionName() {
+      return $this->action_name;
+  }
+}
+
+/**
+ * Main class
+ */
 class WebFramework {
 
   protected $config;
   protected $controller;
 
-  public function __construct() {
-    $this->config = Config::getInstance();
+  public function __construct($conf) {
+    $this->config = $conf;
 
     spl_autoload_register(array($this, 'autoload'));
     $this->handleController();
