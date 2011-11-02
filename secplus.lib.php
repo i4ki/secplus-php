@@ -46,19 +46,19 @@ abstract class Config {
    * Database host
    * @var string
    */
-  protected $db_host = "127.0.0.1";
+  protected $dbHost = "127.0.0.1";
 
   /**
    * Database user
    * @var string
    */
-  protected $db_user = "";
+  protected $dbUser = "";
 
   /**
    * Database password
    * @var string
    */
-  protected $db_pass = "";
+  protected $dbPass = "";
 
   /**
    * Database driver
@@ -70,7 +70,7 @@ abstract class Config {
    * Database name
    * @var string
    */
-  protected $database = "";
+  protected $dbDatabase = "";
 
   /**
    * Salt for hash algorithms
@@ -81,21 +81,28 @@ abstract class Config {
   /**
    * Directory configuration
    */
-  protected $root_project_dir;
-  protected $lib_dir;
-  protected $controller_dir;
-  protected $model_dir;
-  protected $dao_dir;
-  protected $vo_dir;
-  protected $view_dir;
-  protected $static_dir;
+  protected $rootProjectDir;
+  protected $libDir;
+  protected $controllerDir;
+  protected $modelDir;
+  protected $daoDir;
+  protected $voDir;
+  protected $viewDir;
+  protected $staticDir;
 
   /**
    * Safe PHP files to include to prevent LFI/LFD
    * Array with every php file that is safe to include/require into project
    & @var array
-   */
-  protected $safe_files = array();
+  */
+  protected $safeFiles = array();
+
+  protected $safeProperties = array(
+                                    'rootProjectDir','libDir','controllerDir',
+                                    'modelDir','daoDir','voDir','viewDir','staticDir',
+                                    'dbHost','dbUser','dbPass','dbDatabase','dbms',
+                                    'salt','controllerName','actionName','safeFiles'
+                                    );
 
   /**
    * MVC Configuration
@@ -104,16 +111,16 @@ abstract class Config {
   /**
    * Name of the controllers.
    * This is the name of the uri parameter that invoke the controller.
-   * ex.: http://site]/?$controller=home
+   * ex.: http://site]/?$controllerName=home
    * @var string
    */
-  protected $controller_name = "controller";
+  protected $controllerName = "controller";
 
   /**
    * Name of the action.
    * @var string
    */
-  protected $action_name = "action";
+  protected $actionName = "action";
 
   /**
    * Get a instance of the configuration class
@@ -140,143 +147,39 @@ abstract class Config {
    * {@link $view_dir}
    * {@link $static_dir}
    */
-  private function __construct() {
-    $this->root_project_dir = dirname($_SERVER['SCRIPT_FILENAME']);
-    $this->lib_dir = $this->root_project_dir . '/lib';
-    $this->controller_dir = $this->root_project_dir . '/controller';
-    $this->model_dir = $this->root_project_dir . '/model';
-    $this->dao_dir = $this->model_dir . '/dao';
-    $this->vo_dir = $this->model_dir . '/vo';
-    $this->view_dir = $this->root_project_dir . '/view';
-    $this->static_dir = Config::PROJECT_URL . '/view';
+  protected function __construct() {
+    $this->rootProjectDir = dirname($_SERVER['SCRIPT_FILENAME']);
+    $this->libDir = $this->rootProjectDir . '/lib';
+    $this->controllerDir = $this->rootProjectDir . '/controller';
+    $this->modelDir = $this->rootProjectDir . '/model';
+    $this->daoDir = $this->modelDir . '/dao';
+    $this->voDir = $this->modelDir . '/vo';
+    $this->viewDir = $this->rootProjectDir . '/view';
+    $this->staticDir = Config::PROJECT_URL . '/view';
   }
 
   /**
-   * Getter for {@link $db_user}
-   * @return string
+   * This is a PHP magic method.
+   * Implementing this method we avoid have to declare boilerplate getters and setters.
+   * @param string $func
+   * @param array $args
+   * @return mixed
    */
-  public function getDbUser() {
-    return $this->db_user;
-  }
+  public function __call($func, $args) {
+    if (preg_match('/^get/', $func) && count($args) == 0) {
+      $prop = lcfirst(substr($func, 3));
+      if (!empty($prop) && in_array($prop, $this->safeProperties)) {
+        return $this->{$prop};
+      }
+    } else if (preg_match('/^set/', $func) && count($args) == 1) {
+      $prop = lcfirst(substr($func, 3));
+      if (in_array($prop, $this->safeProperties)) {
+        $this->{$prop} = $args[0];
+        return;
+      }
+    }
 
-  /**
-   * Getter for {@link $db_pass}
-   * @return string
-   */
-  public function getDbPass() {
-    return $this->db_pass;
-  }
-
-  /**
-   * Getter for {@link $database}
-   * @return string
-   */
-  public function getDatabase() {
-    return $this->database;
-  }
-
-  /**
-   * Getter for {@link $dbms}
-   * @return string
-   */
-  public function getDbms() {
-    return $this->dbms;
-  }
-
-  /**
-   * Getter for {@link $db_host}
-   * @return string
-   */
-  public function getDbHost() {
-         return $this->db_host;
-  }
-
-  /**
-   * Getter for {@link $root_project_dir}
-   * @return string
-   */
-  public function getRootDir() {
-    return $this->root_project_dir;
-  }
-
-  /**
-   * Getter for {@link $lib_dir}
-   * @return string
-   */
-  public function getLibDir() {
-    return $this->lib_dir;
-  }
-
-  /**
-   * Getter for {@link $controller_dir}
-   * @return string
-   */
-  public function getControllerDir() {
-    return $this->controller_dir;
-  }
-
-  /**
-   * Getter for {@link $model_dir}
-   * @return string
-   */
-  public function getModelDir() {
-    return $this->model_dir;
-  }
-
-  /**
-   * Getter for {@link $dao_dir}
-   * @return string
-   */
-  public function getDaoDir() {
-    return $this->dao_dir;
-  }
-
-  /**
-   * Getter for {@link $vo_dir}
-   * @return string
-   */
-  public function getVoDir() {
-    return $this->vo_dir;
-  }
-
-  /**
-   * Getter for {@link $view_dir}
-   * @return string
-   */
-  public function getViewDir() {
-    return $this->view_dir;
-  }
-
-  /**
-   * Getter for {@link $static_dir}
-   * @return string
-   */
-  public function getStaticDir() {
-    return $this->static_dir;
-  }
-
-  /**
-   * Getter for {@link $safe_files}
-   * @return array
-   */
-  public function getSafeFiles() {
-    return $this->safe_files;
-  }
-
-  /**
-   * Getter for {@link $controller_name}
-   * @return string
-   */
-  public function getControllerName() {
-      return $this->controller_name;
-  }
-  
-  /**
-   * Getter for {@link $action_name}
-   * @return string
-   */
-  public function getActionName() {
-      return $this->action_name;
+    throw new \Exception("Fatal error: Method '" . htmlentities($func) . "' not found or permission denied to be called.");
   }
 }
 
@@ -330,10 +233,10 @@ class WebFramework {
   protected function handleController() {
     $c = Config::getInstance();
       
-    $controller_name = $c->getControllerName();
+    $controllerName = $c->getControllerName();
     $action_name = $c->getActionName();
-    if (!empty($_GET[$controller_name])) {
-      $controller = $_GET[$controller_name];
+    if (!empty($_GET[$controllerName])) {
+      $controller = $_GET[$controllerName];
     } else {
       $controller = "home";  // If any controller, this is the default.
     }
@@ -427,7 +330,7 @@ class Database {
       $host = $config->getDbHost();
       $user = $config->getDbUser();
       $pass = $config->getDbPass();
-      $dbname   = $config->getDatabase();
+      $dbname   = $config->getDbDatabase();
 	
       $datasource = $dbms . ":" . "host=" . $host . ";dbname=" . $dbname;
       
@@ -457,4 +360,3 @@ final class Helper {
   public static function html_redirect($url, $time) { print '<meta http-equiv="refresh" content="' . htmlentities($time) . '; url=' . $url . '">'; }
   public static function alert($msg) { print '<script type="text/javascript">alert("' . htmlentities($msg) . '");</script>'; }
 }
-
