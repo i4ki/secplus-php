@@ -319,6 +319,7 @@ class WebFramework {
       require $filename;
     else {
       print '<span style="color: white; background-color: red;">File ' . htmlentities($filename) . ' not found or permission denied to include.</span><br><br>';
+      die();
     }
   }
 
