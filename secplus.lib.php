@@ -377,7 +377,7 @@ abstract class AbstractController implements IController {
       extract($arr_vars);
       include $view_file;
     } else {
-      print "<span style=\"color: red;\">permission denied to include the file '$view_file'</span>";
+      print "<span style=\"color: red;\">permission denied to include the file '" . htmlentities($view_file) . "'</span>";
       die();
     }
   }
