@@ -457,3 +457,4 @@ final class Helper {
   public static function html_redirect($url, $time) { print '<meta http-equiv="refresh" content="' . htmlentities($time) . '; url=' . $url . '">'; }
   public static function alert($msg) { print '<script type="text/javascript">alert("' . htmlentities($msg) . '");</script>'; }
 }
+
