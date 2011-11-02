@@ -91,11 +91,11 @@ abstract class Config {
   protected $static_dir;
 
   /**
-   * Safe PHP files to include
+   * Safe PHP files to include to prevent LFI/LFD
    * Array with every php file that is safe to include/require into project
    & @var array
    */
-  protected $view_files = array();
+  protected $safe_files = array();
 
   /**
    * MVC Configuration
@@ -149,41 +149,6 @@ abstract class Config {
     $this->vo_dir = $this->model_dir . '/vo';
     $this->view_dir = $this->root_project_dir . '/view';
     $this->static_dir = Config::PROJECT_URL . '/view';
-
-    /**
-     * Security against Local File Include/Disclosure
-     * Every file that need be dinamically loaded into project is included in this array
-     */
-    $this->safe_files = array(
-	/* view */
-	$this->view_dir . '/DashboardView.php',
-        $this->view_dir . '/UserListView.php',
-        $this->view_dir . '/UserAddView.php',
-        $this->view_dir . '/UserEditView.php',
-        $this->view_dir . '/UserDeleteView.php',
-        $this->view_dir . '/ProductView.php',
-        $this->view_dir . '/ProductListView.php',
-        $this->view_dir . '/CategoryView.php',
-
-	/* controllers */
-	$this->controller_dir . '/DashboardController.php',
-        $this->controller_dir . '/UserController.php',
-        $this->controller_dir . '/ProductController.php',
-        $this->controller_dir . '/CategoryController.php',
-
-        /* models */
-        $this->dao_dir . '/UserDAO.php',
-        $this->dao_dir . '/ProductDAO.php',
-        $this->dao_dir . '/CategoryDAO.php',
-        $this->dao_dir . '/UserDAO.php',
-
-        /* Value Objects */
-
-        $this->vo_dir . '/User.php',
-        $this->vo_dir . '/Product.php',
-        $this->vo_dir . '/Category.php'
-
-	);
   }
 
   /**
@@ -353,7 +318,7 @@ class WebFramework {
     if (file_exists($filename) && in_array($filename, $this->config->getSafeFiles()))
       require $filename;
     else {
-      print '<span style="color: white; background-color: red;">File ' . $filename . ' not found or permission denied to include.</span><br><br>';
+      print '<span style="color: white; background-color: red;">File ' . htmlentities($filename) . ' not found or permission denied to include.</span><br><br>';
     }
   }
 
