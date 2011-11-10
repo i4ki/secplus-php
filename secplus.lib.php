@@ -101,8 +101,10 @@ abstract class Config {
                                     'rootProjectDir','libDir','controllerDir',
                                     'modelDir','daoDir','voDir','viewDir','staticDir',
                                     'dbHost','dbUser','dbPass','dbDatabase','dbms',
-                                    'salt','controllerName','actionName','safeFiles'
+                                    'salt','controllerName','actionName','safeFiles','defaultController'
                                     );
+
+  protected $defaultController = "home";
 
   /**
    * MVC Configuration
@@ -238,7 +240,7 @@ class WebFramework {
     if (!empty($_GET[$controllerName])) {
       $controller = $_GET[$controllerName];
     } else {
-      $controller = "home";  // If any controller, this is the default.
+      $controller = $c->getDefaultController();  // If any controller, this is the default.
     }
 
     $class = ucfirst($controller) . 'Controller';
