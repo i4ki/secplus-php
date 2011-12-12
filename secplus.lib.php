@@ -223,7 +223,7 @@ class WebFramework {
     if (file_exists($filename) && in_array($filename, $this->config->getSafeFiles()))
       require $filename;
     else {
-      print '<span style="color: white; background-color: red;">File ' . htmlentities($filename) . ' not found or permission denied to include.</span><br><br>';
+      throw new \Exception('<span style="color: white; background-color: red;">File ' . htmlentities($filename) . ' not found or permission denied to include.</span><br><br>');
       die();
     }
   }
@@ -267,6 +267,8 @@ abstract class AbstractController implements IController {
    * Singleton instance of the Config class.
    */
   protected $config;
+
+  protected $vars_export;
 
   /**
    * Renderize the view
@@ -361,4 +363,84 @@ final class Helper {
   public static function http_redirect($url) { header("Location: $url"); }
   public static function html_redirect($url, $time) { print '<meta http-equiv="refresh" content="' . htmlentities($time) . '; url=' . $url . '">'; }
   public static function alert($msg) { print '<script type="text/javascript">alert("' . $msg . '");</script>'; }
+}
+
+interface IAuthController {
+  public function permissionDenied();
+}
+
+abstract class AbstractAuthController
+extends AbstractController
+implements IAuthController {
+  protected $session;
+  protected $token = array();
+
+  public function __construct() {
+    session_start();
+    $this->checkPermissions();
+  }
+
+  protected function checkPermissions() {
+    if (empty($session)) {
+      $this->permissionDenied();
+    }
+  }
+}
+
+final class Auth {
+  public static function initSession() {
+    session_start();
+    $_SESSION['session_start_at'] = time();
+  }
+
+  public static function addSession($namevalue = array()) {
+    foreach ($namevalue as $key => $value) {
+      $_SESSION[$key] = $value;
+    }
+  }
+
+  public static function hasSession() {
+    return !empty($_SESSION);
+  }
+
+  public static function destroySession() {
+    session_destroy();
+    unset($_SESSION);
+  }
+}
+
+class Shell {
+  protected $prompt = "SEC+>";
+
+  public function __construct($prompt = null) {
+    if (!empty($prompt)) {
+      $this->prompt = $prompt;
+    }
+  }
+
+  public static function readInput() {
+    return str_replace(array("\r","\n"), null, fread(STDIN, 1024));
+  }
+
+  public function execute($command) {
+    
+  }
+
+  public function banner() {
+    $b = "SEC+ Security WebFramework\nLicense:\tGNU GPL v2.0\nAuthor:\tTiago Natel de Moura aka i4k <tiago4orion@gmail.com>\n";
+    print($b);
+  }
+
+  public static function write($str) {
+    fwrite(STDOUT, $str, strlen($str));
+  }
+}
+
+if (php_sapi_name() == "cli") {
+  secplus_cmd();
+}
+
+function secplus_cmd() {
+  $secshell = new Shell();
+  $secshell->banner();
 }
