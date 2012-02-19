@@ -30,11 +30,16 @@ abstract class Config {
   /* Overload this constant and set the complete url of the project */
   const PROJECT_URL = "http://www.secplus.com.br/";
 
+  const ENV_PRODUCTION = 0;
+  const ENV_DEVELOPMENT = 1;
+
   /**
    * Singleton configuration instance
    * @var Config
    */
   private static $instance;
+
+  private $environment = Config::ENV_DEVELOPMENT;
 
   /**
    * Database configuration
@@ -160,6 +165,9 @@ abstract class Config {
     $this->staticDir = Config::PROJECT_URL . '/view';
   }
 
+  public function setEnvironment($env) { $this->environment = $env; }
+  public function getEnvironment() { return $this->environment; }
+
   /**
    * This is a PHP magic method.
    * Implementing this method we avoid have to declare boilerplate getters and setters.
@@ -181,7 +189,12 @@ abstract class Config {
       }
     }
 
-    throw new \Exception("Fatal error: Method '" . htmlentities($func) . "' not found or permission denied to be called.");
+    if ($this->environment == Config::ENV_DEVELOPMENT) {
+      throw new \Exception("Fatal error: Method '" . htmlentities($func) . "' not found or permission denied to be called.");
+    } else {
+      /* blind error */
+      throw new \Exception("Fatal error!");
+    }
   }
 }
 
@@ -223,8 +236,7 @@ class WebFramework {
     if (file_exists($filename) && in_array($filename, $this->config->getSafeFiles()))
       require $filename;
     else {
-      throw new \Exception('<span style="color: white; background-color: red;">File ' . htmlentities($filename) . ' not found or permission denied to include.</span><br><br>');
-      die();
+      Helper::throwPermissionDeniedInclude($filename);
     }
   }
 
@@ -284,8 +296,7 @@ abstract class AbstractController implements IController {
       extract($arr_vars);
       include $view_file;
     } else {
-      print "<span style=\"color: red;\">permission denied to include the file '" . htmlentities($view_file) . "'</span>";
-      die();
+      Helper::throwPermissionDeniedInclude($view_file);
     }
   }
 }
@@ -363,6 +374,16 @@ final class Helper {
   public static function http_redirect($url) { header("Location: $url"); }
   public static function html_redirect($url, $time) { print '<meta http-equiv="refresh" content="' . htmlentities($time) . '; url=' . $url . '">'; }
   public static function alert($msg) { print '<script type="text/javascript">alert("' . $msg . '");</script>'; }
+  public static function throwPermissionDeniedInclude($filename) {
+    $c = Config::getInstance();
+    if ($c->getEnvironment() == Config::ENV_DEVELOPMENT) {
+      throw new \Exception('<span style="color: white; background-color: red;">File ' . htmlentities($filename) . ' not found or permission denied to include.</span><br><br>');
+    } else {
+      /* Blind error */
+      throw new \Exception("<span style=\"color: white; background-color: red;\">Fatal Error!</span>");
+    }
+      die();
+  }
 }
 
 interface IAuthController {
