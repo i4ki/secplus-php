@@ -282,6 +282,10 @@ abstract class AbstractController implements IController {
 
   protected $vars_export;
 
+  public function __construct() {
+    $this->config = Config::getInstance();
+  }
+
   /**
    * Renderize the view
    *
