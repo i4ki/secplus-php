@@ -27,9 +27,7 @@ abstract class Config {
 
   /* Overload this constant and set the project name */
   const PROJECT_NAME = "Sec+ WebFramework";
-  /* Overload this constant and set the complete url of the project */
-  const PROJECT_URL = "http://www.secplus.com.br/";
-
+  
   const ENV_PRODUCTION = 0;
   const ENV_DEVELOPMENT = 1;
 
@@ -102,11 +100,17 @@ abstract class Config {
   */
   protected $safeFiles = array();
 
+  /**
+   * Safe PHP properties that can be used with __call.
+   * This prevent unrestricted php code execution.
+   * @var array
+   */
   protected $safeProperties = array(
                                     'rootProjectDir','libDir','controllerDir',
                                     'modelDir','daoDir','voDir','viewDir','staticDir',
                                     'dbHost','dbUser','dbPass','dbDatabase','dbms',
-                                    'salt','controllerName','actionName','safeFiles','defaultController'
+                                    'salt','controllerName','actionName','safeFiles',
+                                    'defaultController', 'defaultTitle'
                                     );
 
   protected $defaultController = "home";
@@ -128,6 +132,12 @@ abstract class Config {
    * @var string
    */
   protected $actionName = "action";
+
+  /**
+   * Default title for pages
+   * @var string
+   */
+  protected $defaultTitle = "SEC+ Security Architecture for Enterprises";
 
   /**
    * Get a instance of the configuration class
@@ -162,12 +172,16 @@ abstract class Config {
     $this->daoDir = $this->modelDir . '/dao';
     $this->voDir = $this->modelDir . '/vo';
     $this->viewDir = $this->rootProjectDir . '/view';
-    $this->staticDir = Config::PROJECT_URL . '/view';
+    $this->staticDir = $this->getProjectUrl() . '/view';
   }
 
   public function setEnvironment($env) { $this->environment = $env; }
   public function getEnvironment() { return $this->environment; }
-
+  public function isDebug() { return $this->getEnvironment() == Config::ENV_DEVELOPMENT; }
+  public static function getHost() { return $_SERVER['HTTP_HOST']; }
+  public static function getProjectUrl() { return "http://" . self::getHost() . $_SERVER['SCRIPT_NAME']; }
+  public static function getProjectBaseUrl() { return "http://" . self::getHost() . dirname($_SERVER['SCRIPT_NAME']); }
+  
   /**
    * This is a PHP magic method.
    * Implementing this method we avoid have to declare boilerplate getters and setters.
@@ -280,10 +294,14 @@ abstract class AbstractController implements IController {
    */
   protected $config;
 
-  protected $vars_export;
+  protected $vars_export = array();
 
-  public function __construct() {
+  public function _setupController() {
     $this->config = Config::getInstance();
+    $this->vars_export['controller'] = $_GET[$this->config->getControllerName()];
+    $this->vars_export['web_path'] = $this->config->getStaticDir();
+    $this->vars_export['url'] = Config::getProjectBaseUrl();
+    $this->vars_export['title'] = \Config::PROJECT_NAME;
   }
 
   /**
@@ -312,9 +330,15 @@ abstract class AbstractModel implements IModel {
   /**
    * Singleton instance of the database connection
    */
-  private static $conn = null;
+  public static $conn = null;
+  protected $config;
+
+  public function __construct() {
+    $this->_connect();
+    $this->config = \Config::getInstance();
+  }
   
-  public function connect() {
+  public function _connect() {
     self::$conn = Database::getConnection();
   }
 }
@@ -324,6 +348,27 @@ abstract class AbstractModel implements IModel {
  */
 interface IModel {
   
+}
+
+interface IValueObject {
+
+}
+
+abstract class AbstractValueObject implements IValueObject {
+  public function __call($func, $args) {
+    if (preg_match('/^get/', $func) && count($args) == 0) {
+      $prop = lcfirst(substr($func, 3));
+      if (!empty($prop)) {
+        return $this->{$prop};
+      }
+    } else if (preg_match('/^set/', $func) && count($args) == 1) {
+      $prop = lcfirst(substr($func, 3));
+      if (!empty($prop)) {
+        $this->{$prop} = $args[0];
+        return;
+      }
+    }
+  }
 }
 
 /**
@@ -375,6 +420,18 @@ class Database {
  * Helpers to aid in develop.
  */
 final class Helper {
+  public static function html_doctype() {
+    return "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">";
+  }
+  public static function print_html_doctype() { print SecPlus\Helper::html_doctype(); }
+  public static function html_header($charset = 'utf-8') {
+    $c = \Config::getInstance();
+    $html = Helper::html_doctype() . "\n";
+    $html .= "<head>\n<meta http-equiv=\"Content-type\" content=\"text/html; charset=" . $charset . "\" />\n";
+    $html .= "<title>" . $c::PROJECT_NAME . "</title>\n</head>\n<body>\n";
+    return $html;
+  }
+  public static function print_html_header($charset = 'utf-8') { print Helper::html_header($charset); }
   public static function http_redirect($url) { header("Location: $url"); }
   public static function html_redirect($url, $time) { print '<meta http-equiv="refresh" content="' . htmlentities($time) . '; url=' . $url . '">'; }
   public static function alert($msg) { print '<script type="text/javascript">alert("' . $msg . '");</script>'; }
@@ -413,9 +470,13 @@ implements IAuthController {
 }
 
 final class Auth {
-  public static function initSession() {
+  public static function initSession($name = 'secplus_auth_session') {
+    if (!empty($_SESSION)) {
+      Auth::destroySession();
+    }
     session_start();
     $_SESSION['session_start_at'] = time();
+    $_SESSION[$name] = true;
   }
 
   public static function addSession($namevalue = array()) {
@@ -424,8 +485,8 @@ final class Auth {
     }
   }
 
-  public static function hasSession() {
-    return !empty($_SESSION);
+  public static function hasSession($name) {
+    return !empty($_SESSION) && !empty($_SESSION[$name]);
   }
 
   public static function destroySession() {
