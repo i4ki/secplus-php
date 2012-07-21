@@ -3,10 +3,9 @@
 Sec+ is a little library for web development in PHP. It's focused in security
 and performance.
 
-Authors: i4k   - Tiago Natel de Moura
-         m0nad - Victor Ramos Mello
-         
-Documentation: 
+Author: i4k   - Tiago Natel de Moura
+
+API Documentation: 
 http://www.secplus.com.br/secplus-php/doc/html/
 
 SEC+   - http://www.secplus.com.br/

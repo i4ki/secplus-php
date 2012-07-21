@@ -177,7 +177,7 @@ abstract class Config {
    * {@link $static_dir}
    */
   protected function __construct() {
-    $this->rootProjectDir = dirname($_SERVER['SCRIPT_FILENAME']);
+    $this->rootProjectDir = basename($_SERVER['SCRIPT_FILENAME']) == 'index.php' ? dirname($_SERVER['SCRIPT_FILENAME']) : '.';
     $this->libDir = $this->rootProjectDir . '/lib';
     $this->controllerDir = $this->rootProjectDir . '/controller';
     $this->modelDir = $this->rootProjectDir . '/model';
@@ -950,7 +950,6 @@ class CreateCommand extends ShellCmd {
       return;
     }
     $vo_src = str_replace("{#value_object#}", $vo_name, $vo_src);
-
     $output = $this->project_dir . '/' . $this->config->getVoDir() . '/' . $vo_name . '.php';    
 
     if (!file_put_contents($output, $vo_src)) {
@@ -958,6 +957,26 @@ class CreateCommand extends ShellCmd {
       return;
     } else {
       $this->print_success("[+] ValueObject '$vo_name' created with success.");
+      $this->print_success("Output: $output");
+    }
+  }
+
+  public function configfile($config_file) {
+    $conf_tpl_fname = dirname($_SERVER['SCRIPT_FILENAME']) . '/tpl/config_tpl_fname.tpl';
+    $conf_src = file_get_contents($conf_tpl_fname);
+
+    if (empty($conf_src)) {
+      $this->print_error("Failed to open SecPlus-PHP resource file '{$conf_tpl_fname}'.");
+      die();
+    }
+
+    $output = $config_file;
+
+    if (!file_put_contents($output, $conf_src)) {
+      $this->print_error("[-] Failed to write on file '$output'");
+      return;
+    } else {
+      $this->print_success("[+] Config file '$config_file' created with success.");
       $this->print_success("Output: $output");
     }
   }
@@ -988,8 +1007,24 @@ class Shell {
     } else {
       print "[-] file '{$this->config_file}' not exists or permission denied to open.\n";
       print "[-] we need a configuration file to run scaffolding commands.\n";
-      die();
+      print "[?] You want that we generate the '{$this->config_file}' for you? [y/N]";
+      $opt = Shell::readInput();
+      if (empty($opt)||($opt != "y" && $opt != "Y")) {
+        print "[-] aborting...\n";
+        die();
+      } else {
+        if ($this->generateConfig($this->config_file)) {
+          $this->checkConfig();
+        } else {
+          die();
+        }
+      }      
     }
+  }
+
+  public function generateConfig($config_file) {
+    $creator = new CreateCommand();
+    $creator->configfile($config_file);
   }
 
   public function loopExecute() {
