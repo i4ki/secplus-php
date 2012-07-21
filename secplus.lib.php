@@ -985,6 +985,10 @@ class Shell {
         $this->config = \Config::getInstance();
         print "[+] using '{$this->config_file}' for configuration.\n";
       }
+    } else {
+      print "[-] file '{$this->config_file}' not exists or permission denied to open.\n";
+      print "[-] we need a configuration file to run scaffolding commands.\n";
+      die();
     }
   }
 
