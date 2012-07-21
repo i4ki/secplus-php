@@ -110,10 +110,22 @@ abstract class Config {
                                     'modelDir','daoDir','voDir','viewDir','staticDir',
                                     'dbHost','dbUser','dbPass','dbDatabase','dbms',
                                     'salt','controllerName','actionName','safeFiles',
-                                    'defaultController', 'defaultTitle'
+                                    'defaultController', 'defaultAction', 'defaultTitle'
                                     );
 
+  /**
+   * Default controller to be called in case of anyone controller specified
+   * in the URL.
+   * @var string
+   */
   protected $defaultController = "home";
+
+  /**
+   * Default action to be called in case of anyone action specified in
+   * the URL.
+   * @var string
+   */
+  protected $defaultAction = "view";
 
   /**
    * MVC Configuration
@@ -122,7 +134,7 @@ abstract class Config {
   /**
    * Name of the controllers.
    * This is the name of the uri parameter that invoke the controller.
-   * ex.: http://site]/?$controllerName=home
+   * ex.: http://site]/?[controllerName]=home
    * @var string
    */
   protected $controllerName = "controller";
@@ -140,7 +152,7 @@ abstract class Config {
   protected $defaultTitle = "SEC+ Security Architecture for Enterprises";
 
   /**
-   * Get a instance of the configuration class
+   * Get a Singleton instance of the configuration class
    * @return Config
    */
   public static function getInstance() {
@@ -178,7 +190,7 @@ abstract class Config {
   public function setEnvironment($env) { $this->environment = $env; }
   public function getEnvironment() { return $this->environment; }
   public function isDebug() { return $this->getEnvironment() == Config::ENV_DEVELOPMENT; }
-  public static function getHost() { return $_SERVER['HTTP_HOST']; }
+  public static function getHost() { return php_sapi_name() == 'cli' ? 'cli' : $_SERVER['HTTP_HOST']; }
   public static function getProjectUrl() { return "http://" . self::getHost() . $_SERVER['SCRIPT_NAME']; }
   public static function getProjectBaseUrl() { return "http://" . self::getHost() . dirname($_SERVER['SCRIPT_NAME']); }
   
@@ -294,14 +306,41 @@ abstract class AbstractController implements IController {
    */
   protected $config;
 
+  protected $_controller;
+
+  protected $_action;
+
   protected $vars_export = array();
+
+  protected $safe_actions = array();
 
   public function _setupController() {
     $this->config = Config::getInstance();
-    $this->vars_export['controller'] = $_GET[$this->config->getControllerName()];
+
+    $this->_controller = !empty($_GET[$this->config->getControllerName()]) ?
+      $_GET[$this->config->getControllerName()] : $this->config->getDefaultAction();
+
+    $this->vars_export['controller'] = $this->_controller;
+    
+    $this->_action = !empty($_GET[$this->config->getActionName()]) ?
+      $_GET[$this->config->getActionName()] :
+      $this->config->getDefaultAction();
+    
+    $this->vars_export['action'] = $this->_action; 
     $this->vars_export['web_path'] = $this->config->getStaticDir();
     $this->vars_export['url'] = Config::getProjectBaseUrl();
     $this->vars_export['title'] = \Config::PROJECT_NAME;
+
+    $this->safe_actions[] = $this->config->getDefaultAction();
+  }
+
+  public function handleAction() {
+    if (in_array($this->_action, $this->safe_actions)) {
+      call_user_func(array($this, $this->_action));
+    } else {
+      Util::error_security("Unknown action or permission denied to execute.");
+      die();
+    }
   }
 
   /**
@@ -310,11 +349,12 @@ abstract class AbstractController implements IController {
    * $view is the name of the view to render.
    * $arr_vars is an array of variables to export to be visible in the view file context.
    */
-  public function render($view, $arr_vars) {
+  public function render($view, $arr_vars = array()) {
     $view_file = $this->config->getViewDir() . DIRECTORY_SEPARATOR . $view . 'View.php';
     $safe_files = $this->config->getSafeFiles();
 
     if (in_array($view_file, $safe_files)) {
+      extract($this->vars_export);
       extract($arr_vars);
       include $view_file;
     } else {
@@ -332,6 +372,9 @@ abstract class AbstractModel implements IModel {
    */
   public static $conn = null;
   protected $config;
+  protected $_table_name;
+  protected $_id_name = 'id';
+  protected $_vo_name;
 
   public function __construct() {
     $this->_connect();
@@ -340,6 +383,170 @@ abstract class AbstractModel implements IModel {
   
   public function _connect() {
     self::$conn = Database::getConnection();
+  }
+
+  public function setTableName($tname) {
+    $this->_table_name = $tname;
+  }
+
+  public function getTableName() {
+    return $this->_table_name;
+  }
+
+  public function setValueObjectName($name) {
+    $this->_vo_name = $name;
+  }
+
+  public function _setupDAO() {
+    $this->_table_name = !empty($this->_table_name) ? $this->_table_name : strtolower(str_replace(__NAMESPACE__, "", str_replace('DAO', '', get_class($this))));
+    $this->_vo_name = !empty($this->_vo_name) ? $this->_vo_name : ucfirst($this->_table_name);
+  }
+
+  public function get($id) {
+    $this->_setupDAO();
+
+    try {
+      $stmt = self::$conn->prepare("SELECT * FROM " . $this->_table_name . " WHERE " . $this->_id_name . " = :id");
+      $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
+      $stmt->execute();
+
+      $result = $stmt->fetchAll();
+
+      if (count($result) > 0) {
+        $r = $result[0];
+        $voName = $this->_vo_name;
+        $obj = new $voName();
+        $obj = $this->map2object($obj, $r);
+
+        return $obj;
+      }
+
+      return NULL;
+      
+    } catch (Exception $e) {
+      if ($this->config->isDebug()) {
+        print $e->getMessage();
+        die();
+      } else {
+        print "database error.\n";
+        die();
+      }
+    }
+
+    return NULL;
+  }
+
+  public function getAll() {
+    $this->_setupDAO();
+    
+    try {
+      $stmt = self::$conn->prepare("select * from " . $this->_table_name);
+      $stmt->execute();
+
+      $result = $stmt->fetchAll();
+      $objects = array();
+
+      for ($i = 0; $i < count($result); $i++) {
+        $r = $result[$i];
+        $voName = $this->_vo_name;
+        $obj = new $voName();
+        $obj = $this->map2object($obj, $r);
+        $objects[] = $obj;
+      }
+
+      return $objects;
+    } catch (Exception $e) {
+      if ($this->config->isDebug()) {
+        print $e->getMessage();
+        die();
+      }
+    }
+
+    return NULL;
+  }
+
+  public function update($obj) {
+    $this->_setupDAO();
+
+    try {
+      $data = $obj->getData();
+      $keys = array_keys($data);
+      $sql = SQLBuilder::update($this->_table_name, $keys, array($this->_id_name));
+      $stmt = self::$conn->prepare($sql);
+
+      foreach($data as $name => &$val) {
+        if ($name == $this->_id_name) {
+          continue;
+        }
+
+        $stmt->bindParam(':' . $name, $val); 
+      }
+      
+      $stmt->bindParam(':' . $this->_id_name, $data[$this->_id_name], \PDO::PARAM_INT);
+      $stmt->execute();
+
+      return $stmt->rowCount() > 0;
+    } catch (Exception $e) {
+      if ($this->config->isDebug()) {
+        print $e->getMessage();
+        die();
+      }
+    }
+
+    return 0;
+  }
+
+  public function save($obj) {
+    $this->_setupDAO();
+
+    try {
+      $data = $obj->getData();
+      $keys = array_keys($data);
+      $sql = SQLBuilder::insert($this->_table_name, $keys, $this->_id_name);
+      $stmt = self::$conn->prepare($sql);
+
+      foreach($data as $name => &$val) {
+        if ($name == $this->_id_name) {
+          continue;
+        }
+
+        $stmt->bindParam(':' . $name, $val);
+      }
+      
+      $stmt->execute();
+
+      return $stmt->rowCount() > 0;
+    } catch (Exception $e) {
+      if ($this->config->isDebug()) {
+        print $e->getMessage();
+        die();
+      }
+    }
+
+    return 0;
+  }
+
+  public function map2object($user, $res) {
+    $keys = array_keys($res);
+    for ($j = 0; $j < count($keys); $j++) {
+      if (is_string($keys[$j])) {
+        $user->{$keys[$j]} = $res[$keys[$j]];
+      }
+    }
+
+    return $user;
+  }
+
+  public function map2array($res) {
+    $ar = array();
+    $keys = array_keys($res);
+    for ($j = 0; $j < count($keys); $j++) {
+      if (is_string($keys[$j])) {
+        $ar[] = array($keys[$j], $res[$keys[$j]]);
+      }
+    }
+
+    return $ar;
   }
 }
 
@@ -355,19 +562,45 @@ interface IValueObject {
 }
 
 abstract class AbstractValueObject implements IValueObject {
+  protected $_data = array();
+
+  public function __set($name, $val) {
+    $this->_data[$name] = $val;
+  }
+
+  public function __get($name) {
+    if (array_key_exists($name, $this->_data)) {
+      return $this->_data[$name];
+    } else {
+      return NULL;
+    }
+  }
+
+  public function __isset($name) {
+    return isset($this->_data[$name]);
+  }
+
+  public function __unset($name) {
+    unset($this->_data[$name]);
+  }
+  
   public function __call($func, $args) {
     if (preg_match('/^get/', $func) && count($args) == 0) {
       $prop = lcfirst(substr($func, 3));
       if (!empty($prop)) {
-        return $this->{$prop};
+        return $this->_data[$prop];
       }
     } else if (preg_match('/^set/', $func) && count($args) == 1) {
       $prop = lcfirst(substr($func, 3));
       if (!empty($prop)) {
-        $this->{$prop} = $args[0];
+        $this->_data[$prop] = $args[0];
         return;
       }
     }
+  }
+
+  public function getData() {
+    return $this->_data;
   }
 }
 
@@ -387,14 +620,13 @@ class Database {
    * Connect to database
    */
   public static function getConnection() {
+    $config = Config::getInstance();
     try {
-      $config = Config::getInstance();
-
       $dbms = $config->getDbms();
       $host = $config->getDbHost();
       $user = $config->getDbUser();
       $pass = $config->getDbPass();
-      $dbname   = $config->getDbDatabase();
+      $dbname = $config->getDbDatabase();
 	
       $datasource = $dbms . ":" . "host=" . $host . ";dbname=" . $dbname;
       
@@ -404,10 +636,15 @@ class Database {
       return self::$conn;
 
     } catch (PDOException $e) {
-      print "database connection error.";
+      if ($config->isDebug()) {
+        print "Database connection error.";
+      } else {
+        print "Database connection error: " . $e->getMessage();
+      }
       die();
     } catch (Exception $e) {
       print "error: " . $e->getMessage();
+      die();
     }    
   }
 
@@ -416,14 +653,127 @@ class Database {
   }
 }
 
+class SQLBuilder {
+  public static function update($table_name, $values, $where = NULL) {
+    $sql = "UPDATE " . $table_name . " SET ";
+    if (count($values) < 1) {
+      return NULL;
+    }
+
+    $l = count($values);
+    for ($i = 0; $i < $l; $i++) {
+      $sql .= $values[$i] . " = :" . $values[$i];
+      if ($i < ($l - 1)) {
+        $sql .= ", ";
+      }
+    }
+
+    if (!empty($where)) {
+      $sql .= " WHERE ";
+      $l = count($where);
+      for ($i = 0; $i < $l; $i++) {
+        $sql .= $where[$i] . " = :" . $where[$i];
+        if ($i < ($l - 1)) {
+          $sql .= " AND ";
+        }
+      }
+    }
+
+    return $sql;
+  }
+
+  public static function insert($table_name, $values, $primary_key = 'id') {
+    $sql = "INSERT INTO " . $table_name;
+    if (count($values) < 1) {
+      return NULL;
+    }
+
+    $l = count($values);
+    if ($l < 1) {
+      return NULL;
+    }
+
+    $sql .= " (";
+    
+    for ($i = 0; $i < $l; $i++) {
+      if ($values[$i] == $primary_key) {
+        continue;
+      }
+      $sql .= $values[$i];
+      if ($i < ($l - 1)) {
+        $sql .= ", ";
+      }
+    }
+
+    $sql .= ") VALUES (";
+
+    for ($i = 0; $i < $l; $i++) {
+      if ($values[$i] == $primary_key) {
+        continue;
+      }
+      
+      $sql .= ':' . $values[$i];
+      if ($i < ($l - 1)) {
+        $sql .= ", ";
+      }
+    }
+
+    $sql .= ')';
+
+    return $sql;
+  }
+}
+
+final class Util {
+  public static function error_security($text, $inc_html_header = true) {
+    if ($inc_html_header) {
+      Helper::print_html_header();      
+    }
+
+    $content = "";
+
+    $content .= '<div style="border: 1px solid red; width: 600px; background-color: #ccc">';
+    $content .= "SecPlus-PHP> Security prevention: ";
+    $content .= htmlentities($text);
+    $content .= "\n</div>";
+
+    print $content;
+
+    if ($inc_html_header) {
+      Helper::print_html_footer();
+    }
+  }
+}
+
 /**
  * Helpers to aid in develop.
  */
 final class Helper {
+  /**
+   * Returns a default doctype and html tag header.
+   * @return string
+   */
   public static function html_doctype() {
     return "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">";
   }
+
+  public static function html_footer() {
+    return "</body></html>";
+  }
+
+  public static function print_html_footer() { print Helper::html_footer(); }
+
+  /**
+   * Print the default html and dcotype header to screen.
+   * @return void
+   */
   public static function print_html_doctype() { print SecPlus\Helper::html_doctype(); }
+
+  /**
+   * Return the dwfault html head tag and meta content-type and charset adjusted.
+   * @var string
+   * @return string
+   */
   public static function html_header($charset = 'utf-8') {
     $c = \Config::getInstance();
     $html = Helper::html_doctype() . "\n";
@@ -495,12 +845,154 @@ final class Auth {
   }
 }
 
-class Shell {
-  protected $prompt = "SEC+>";
+interface IShellCommand {
+  public function help();
+}
 
-  public function __construct($prompt = null) {
-    if (!empty($prompt)) {
-      $this->prompt = $prompt;
+abstract class ShellCmd implements IShellCommand {
+  /**
+   * For future output customization.
+   * @var string
+   */
+  public function print_status($text) {
+    print $text;
+  }
+  
+  public function print_success($text) {
+    $t = "[+] " . $text .  "\n";
+    print $t;
+  }
+
+  public function print_error($text) {
+    $t = "[-] " . $text . "\n";
+    print $t;
+  }
+}
+
+class HelpCommand extends ShellCmd {
+  public function auto() {
+    $classes = get_declared_classes();
+
+    foreach($classes as $c) {
+      if (strstr($c, 'Command')) {
+        $command = str_replace('Command', "", $c);
+        $command = str_replace(__NAMESPACE__ . '\\', "", $command);
+        $command = strtolower($command);
+        $this->print_success($command);
+      }
+    }
+  }
+
+  public function help() {
+    $this->auto;
+  }
+}
+
+class CreateCommand extends ShellCmd {
+  protected $config;
+  protected $project_dir;
+  protected $abstractModelClass = 'SecPlus\AbstractModel';
+  
+  public function __construct($config, $project_dir) {
+    $this->config = $config;
+    $this->project_dir = $project_dir;
+  }
+
+  public function help() {
+    $this->print_status("create help:\n");
+    $this->print_status("Command to generate scaffolding. With 'create' you could create\n");
+    $this->print_status("CRUD's, model's, DAO's, VO's, unit-tests, etc.\n");
+    $this->print_status("Usage: create <action> [<opt1> <opt2> ... <optN>]\n");
+    $this->print_status("Actions:\n");
+    $this->print_status("\tdao\tCreate new DAO.\n");
+    $this->print_status("\t\tUsage: create dao <name-of-DAO> <name-of-table>\n");
+    $this->print_status("\n");
+     
+  }
+
+  public function dao($name, $tableName) {
+    $voName = ucfirst($name);
+    $daoName = $voName . 'DAO';
+    $dao_src = "";
+
+    $dao_tpl_fname = dirname($_SERVER['SCRIPT_FILENAME']) . '/tpl/dao.tpl';
+
+    if (!file_exists($dao_tpl_fname)) {
+      $this->print_error("SecPlus-PHP resource file '$dao_tpl_fname' not found.\naborting...");
+      die();
+    }
+
+    $dao_tpl_content = file_get_contents($dao_tpl_fname);
+
+    $dao_src = str_replace("{#vo_include#}",
+                           str_replace($this->config->getRootProjectDir() . '/', "", $this->config->getVoDir() . '/' . $voName . '.php'),
+                           $dao_tpl_content);
+
+    $dao_src = str_replace('{#dao_name#}', $daoName, $dao_src);
+    $dao_src = str_replace('{#model_extends#}', $this->abstractModelClass, $dao_src);
+    
+    $output = $this->project_dir . '/' . $this->config->getDaoDir() . '/' . $daoName . '.php';
+    if (!file_put_contents($output, $dao_src)) {
+      $this->print_error("[-] Failed to write on file '$output'");
+      return;
+    } else {
+      $this->print_success("[+] DAO '$daoName' created with success.");
+      $this->print_success("Output: $output");
+    }
+  }
+
+  public function valueobject($vo_name) {
+    $vo_name = ucfirst($vo_name);
+    $vo_tpl_fname = dirname($_SERVER['SCRIPT_FILENAME']) . '/tpl/vo.tpl';
+    $vo_src = file_get_contents($vo_tpl_fname);
+    if (empty($vo_src)) {
+      $this->print_error("Failed to open the SecPlus-PHP resource file '$vo_tpl_fname'.");
+      return;
+    }
+    $vo_src = str_replace("{#value_object#}", $vo_name, $vo_src);
+
+    $output = $this->project_dir . '/' . $this->config->getVoDir() . '/' . $vo_name . '.php';    
+
+    if (!file_put_contents($output, $vo_src)) {
+      $this->print_error("[-] Failed to write on file '$output'");
+      return;
+    } else {
+      $this->print_success("[+] ValueObject '$vo_name' created with success.");
+      $this->print_success("Output: $output");
+    }
+  }
+
+  public function vo($vo_name) {
+    $this->valueobject($vo_name);
+  }
+}
+
+class Shell {
+  protected $prompt = "SEC+> ";
+  protected $config;
+  protected $config_file = 'config.php';
+
+  public function __construct($config_file) {
+    $this->config_file = $config_file;
+    $this->banner();
+    $this->checkConfig();
+  }
+
+  public function checkConfig() {
+    if (file_exists($this->config_file)) {
+      require $this->config_file;
+      if (class_exists('\Config')) {
+        $this->config = \Config::getInstance();
+        print "[+] using '{$this->config_file}' for configuration.\n";
+      }
+    }
+  }
+
+  public function loopExecute() {
+    while(1) {
+      print $this->prompt;
+      $command = Shell::readInput();
+      $this->execute($command);
     }
   }
 
@@ -509,11 +1001,43 @@ class Shell {
   }
 
   public function execute($command) {
+    $params = explode(" ", $command);
     
+    $classname = __NAMESPACE__ . '\\' . $params[0] . 'Command';
+    $main_command = $params[0];
+    $action = "";
+    $p = array();
+
+    if (count($params) > 1) {
+      $action = $params[1];
+    } else {
+      /* for commands that does not have a action. eg. help */
+      $action = "auto";
+    }
+
+    if (count($params) > 2) {
+      $p = array_slice($params, 2);
+    }
+
+    if (!class_exists($classname)) {
+      print "error: command '$main_command' not found.\n";
+      print "type 'help' for a list of commands available.\n";
+      return;
+    }
+    
+    $class = new $classname($this->config, dirname($this->config_file));
+
+    if (!method_exists($class, $action)) {      
+      print "[-] error: command '$main_command' does not have a action '$action'.\n";
+      print "[+] for help, type: $main_command help.\n";
+      return;
+    }
+    call_user_func_array(array($class, $action), $p);
   }
 
   public function banner() {
     $b = "SEC+ Security WebFramework\nLicense:\tGNU GPL v2.0\nAuthor:\tTiago Natel de Moura aka i4k <tiago4orion@gmail.com>\n";
+    $b .= php_uname() . "\n";
     print($b);
   }
 
@@ -527,6 +1051,18 @@ if (php_sapi_name() == "cli") {
 }
 
 function secplus_cmd() {
-  $secshell = new Shell();
-  $secshell->banner();
+  global $argc;
+  global $argv;
+  $config_file = 'config.php';
+
+  for ($i = 0; $i < $argc; $i++) {
+    if ($argv[$i] == "-c") {
+      if ($i < ($argc - 1)) {
+        $config_file = $argv[$i+1];
+      }
+    }
+  }
+  
+  $secshell = new Shell($config_file);
+  $secshell->loopExecute();
 }
