@@ -37,7 +37,7 @@ $ php lib/secplus-php/secplus.lib.php
 SEC+ Security WebFramework
 License:	GNU GPL v2.0
 Author:	Tiago Natel de Moura aka i4k <tiago4orion@gmail.com>
-Linux li351-42 2.6.39.1-x86_64-linode19 #1 SMP Tue Jun 21 10:04:20 EDT 2011 x86_64
+Linux li351-42 2.6.39.1-x86_64-linode19 #1 SMP Tue Jun 21 10:04:20 2011 x86_64
 [-] file 'config.php' not exists or permission denied to open.
 [-] we need a configuration file to run scaffolding commands.
 [?] You want that we generate the 'config.php' for you? [y/N] y
@@ -72,18 +72,19 @@ http://localhost/myportal/
 
 in your browser.
 
-Note that initially SecPlus-PHP create the HomeController.php and HomeView.php for you.
-Every method in your controller is a suitable action to be trigged.
+Note that initially SecPlus-PHP create the HomeController.php and HomeView.php
+for you. Every method in your controller is a suitable action to be trigged.
 
 http://localhost/myportal/?controller=home&action=view
 
-view is the default action in the default HomeController created. To execute other action
-use the parameter 'action' of URL.
+view is the default action in the default HomeController created. To execute
+other action use the parameter 'action' of URL.
 
 http://localhost/myportal/?controller=home&action=user
 
-will execute the action 'user' in controller HomeController. But this action will be
-executed ONLY IF this action is listed in the safe_actions property of the controller.
+will execute the action 'user' in controller HomeController. But this action
+will be executed ONLY IF this action is listed in the safe_actions property of
+the controller.
 
 In your controller:
 
@@ -96,8 +97,8 @@ In your controller:
 
 This is the basic concept about SecPlus-PHP library.
 
-I don't have much time to write documentation, but if you really need more information or
-you like the project and want to get involved, send me a email:
+I don't have much time to write documentation, but if you really need more
+information or you like the project and want to get involved, send me a email:
 
 natel *nospam* secplus.com.br
 
