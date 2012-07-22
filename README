@@ -70,7 +70,14 @@ You could test visiting:
 
 http://localhost/myportal/
 
-in your browser.
+=== Controllers and Actions ===
+
+Controllers are classes to handle user requests. Every controller have one or
+more actions that are the routines for interact with the user.
+
+For example, in a User Manager application, we need a controller to create,
+edit, delete and update users. For each operation that the user could activate
+need a 'action' in your 'controller' to handle it.
 
 Note that initially SecPlus-PHP create the HomeController.php and HomeView.php
 for you. Every method in your controller is a suitable action to be trigged.
@@ -95,7 +102,116 @@ In your controller:
     }
 ...
 
-This is the basic concept about SecPlus-PHP library.
+=== Model ===
+
+SecPlus-PHP by default uses the DAO (Data Access Object) to handle with
+database operations. The framework have the basic functionalities to
+facilitate the development of Models. You could use the SecPlus-PHP shell to
+create DAO's and ValueObject's.
+
+Classes DAO is the link between controllers and your database and Value Objects
+are classes that represent the records in your database.
+
+For example, if you have the table below:
+
+CREATE TABLE user (
+       id INTEGER AUTO_INCREMENT NOT NULL PRIMARY KEY,
+       username VARCHAR(255) NOT NULL,
+       name VARCHAR(255) NOT NULL,
+       pass VARCHAR(255) NOT NULL
+);
+
+you could use the shell to generate the models for this table:
+
+SEC+> create dao user
+[+] DAO 'UserDAO' created with success.
+[+] Output: ././model/dao/UserDAO.php
+SEC+>
+
+$ cat ././model/dao/UserDAO.php
+<?php
+
+require 'model/vo/User.php';
+
+class UserDAO extends SecPlus\AbstractModel {
+    
+}
+
+SEC+> create valueobject user
+[+] ValueObject 'User' created with success.
+[+] Output: ././model/vo/User.php
+SEC+> ^C
+$ cat ././model/vo/User.php
+<?php
+
+class User extends SecPlus\ValueObject {
+
+}
+
+As you can see, the DAO and ValueObject does not have any real information of
+the user table in your database, but SecPlus-PHP has a few automagic methods to
+get, save, update and delete records in this table.
+
+Before use SecPlus-PHP Models you need adjust your configurations in the
+Config class.
+
+-- config.php
+...
+
+    public function setup() {
+    ...
+        $this->dbHost = '127.0.0.1';
+        $this->dbUser = 'portal';
+        $this->dbPass = '_s3cr3t_';
+        $this->dbDatabase = 'secplus-php-portal';
+    }
+...
+
+For interact with database see below:
+
+-- HomeController.php
+
+...
+    public function view() {
+           require('model/vo/User.php');
+           $user = new User();
+           $user->name = 'Tiago Natel de Moura';
+           $user->username = 'i4k';
+           /* please, dont use md5() for hash passwords in production ...  */
+           $user->pass = md5('_s3cr3tp4ss_' . $this->config->getSalt());
+
+           /* Instantiate the DAO class */
+           $userDAO = new UserDAO();
+
+           /* save/insert the User in database */
+           if ($userDAO->save($user)) {
+              print "User {$user->username} saved successfully.<br>\n";
+           }
+
+           unset($user);
+
+           /* Get the record previously saved. */
+           $user = $userDAO->get(1);
+           print_r($user);
+
+           /* Update the user */
+           $user->username = '_i4k_';
+           if($userDAO->update($user)) {
+               print "User {$user->username} updated successfully.<br>";
+           }
+
+           /* delete the User with id 1 */
+           $userDAO->delete(1);
+    }
+...
+
+This is the basic concept about SecPlus-PHP framework.
+
+This is a little framework that I've been using to develop web projects. It
+implements the basic needs for a web framework. It is ridiculous simple, this
+is possible because of the new features in PHP 5.*. This is still a early
+stage project in active development. Various features need to be implemented,
+feel free to contribute.
 
 I don't have much time to write documentation, but if you really need more
 information or you like the project and want to get involved, send me a email:
