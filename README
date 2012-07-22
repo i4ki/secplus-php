@@ -11,7 +11,14 @@ http://www.secplus.com.br/secplus-php/doc/html/index.html
 SEC+   - http://www.secplus.com.br/
 bugsec - http://bugsec.googlecode.com/
 
-=== Documentation ===
+Found a bug?
+Want to get involved?
+Do you have a review/critique?
+Tell me: natel *nospam* secplus.com.br
+
+== Documentation ==
+
+=== Installation ===
 
 Create the directory of your project.
 $ mkdir /var/www/myportal
@@ -214,7 +221,7 @@ stage project in active development. Various features need to be implemented,
 feel free to contribute.
 
 I don't have much time to write documentation, but if you really need more
-information or you like the project and want to get involved, send me a email:
+information or you like the project and want to get involved, send me an email.
 
 natel *nospam* secplus.com.br
 
