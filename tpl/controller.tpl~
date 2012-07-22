@@ -1,0 +1,11 @@
+<?php
+
+class {#controller_name#} extends SecPlus\AbstractController {
+  public function setup() {
+
+  }
+
+  public function view() {
+    $this->render('home');
+  }
+}

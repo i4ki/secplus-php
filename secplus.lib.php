@@ -33,7 +33,7 @@ abstract class Config {
 
   /**
    * Singleton configuration instance
-   * @var Config
+   * @param Config
    */
   private static $instance;
 
@@ -47,37 +47,37 @@ abstract class Config {
 
   /**
    * Database host
-   * @var string
+   * @param string
    */
   protected $dbHost = "127.0.0.1";
 
   /**
    * Database user
-   * @var string
+   * @param string
    */
   protected $dbUser = "";
 
   /**
    * Database password
-   * @var string
+   * @param string
    */
   protected $dbPass = "";
 
   /**
    * Database driver
-   * @var string
+   * @param string
    */
   protected $dbms = "mysql";
 
   /**
    * Database name
-   * @var string
+   * @param string
    */
   protected $dbDatabase = "";
 
   /**
    * Salt for hash algorithms
-   * @var string
+   * @param string
    */
   protected $salt = "Welcome, to the desert of the real";
   
@@ -96,14 +96,14 @@ abstract class Config {
   /**
    * Safe PHP files to include to prevent LFI/LFD
    * Array with every php file that is safe to include/require into project
-   & @var array
+   & @param array
   */
   protected $safeFiles = array();
 
   /**
    * Safe PHP properties that can be used with __call.
    * This prevent unrestricted php code execution.
-   * @var array
+   * @param array
    */
   protected $safeProperties = array(
                                     'rootProjectDir','libDir','controllerDir',
@@ -116,14 +116,14 @@ abstract class Config {
   /**
    * Default controller to be called in case of anyone controller specified
    * in the URL.
-   * @var string
+   * @param string
    */
   protected $defaultController = "home";
 
   /**
    * Default action to be called in case of anyone action specified in
    * the URL.
-   * @var string
+   * @param string
    */
   protected $defaultAction = "view";
 
@@ -135,19 +135,19 @@ abstract class Config {
    * Name of the controllers.
    * This is the name of the uri parameter that invoke the controller.
    * ex.: http://site]/?[controllerName]=home
-   * @var string
+   * @param string
    */
   protected $controllerName = "controller";
 
   /**
    * Name of the action.
-   * @var string
+   * @param string
    */
   protected $actionName = "action";
 
   /**
    * Default title for pages
-   * @var string
+   * @param string
    */
   protected $defaultTitle = "SEC+ Security Architecture for Enterprises";
 
@@ -283,6 +283,7 @@ class WebFramework {
 
     $class = ucfirst($controller) . 'Controller';
     $c = new $class();
+    $c->_setupController();
     $c->setup();
   }
 }
@@ -325,7 +326,7 @@ abstract class AbstractController implements IController {
     $this->_action = !empty($_GET[$this->config->getActionName()]) ?
       $_GET[$this->config->getActionName()] :
       $this->config->getDefaultAction();
-    
+
     $this->vars_export['action'] = $this->_action; 
     $this->vars_export['web_path'] = $this->config->getStaticDir();
     $this->vars_export['url'] = Config::getProjectBaseUrl();
@@ -353,12 +354,12 @@ abstract class AbstractController implements IController {
     $view_file = $this->config->getViewDir() . DIRECTORY_SEPARATOR . $view . 'View.php';
     $safe_files = $this->config->getSafeFiles();
 
-    if (in_array($view_file, $safe_files)) {
+    if (in_array($view_file, $safe_files) && file_exists($view_file)) {
       extract($this->vars_export);
       extract($arr_vars);
-      include $view_file;
+      include_once($view_file);
     } else {
-      Helper::throwPermissionDeniedInclude($view_file);
+      Helper::throwPermissionDeniedInclude(basename($view_file));
     }
   }
 }
@@ -771,7 +772,7 @@ final class Helper {
 
   /**
    * Return the dwfault html head tag and meta content-type and charset adjusted.
-   * @var string
+   * @param string
    * @return string
    */
   public static function html_header($charset = 'utf-8') {
@@ -793,7 +794,7 @@ final class Helper {
       /* Blind error */
       throw new \Exception("<span style=\"color: white; background-color: red;\">Fatal Error!</span>");
     }
-      die();
+    die();
   }
 }
 
@@ -850,6 +851,18 @@ interface IShellCommand {
 }
 
 abstract class ShellCmd implements IShellCommand {
+  protected $config;
+  protected $config_file;
+  protected $project_dir;
+
+  public function setConfig($c) {
+    $this->config = $c;
+  }
+
+  public function setConfigFile($c) {
+    $this->config_file = $c;
+  }
+  
   /**
    * For future output customization.
    * @var string
@@ -889,8 +902,6 @@ class HelpCommand extends ShellCmd {
 }
 
 class CreateCommand extends ShellCmd {
-  protected $config;
-  protected $project_dir;
   protected $abstractModelClass = 'SecPlus\AbstractModel';
   
   public function __construct($config, $project_dir) {
@@ -904,13 +915,149 @@ class CreateCommand extends ShellCmd {
     $this->print_status("CRUD's, model's, DAO's, VO's, unit-tests, etc.\n");
     $this->print_status("Usage: create <action> [<opt1> <opt2> ... <optN>]\n");
     $this->print_status("Actions:\n");
-    $this->print_status("\tdao\tCreate new DAO.\n");
-    $this->print_status("\t\tUsage: create dao <name-of-DAO> <name-of-table>\n");
-    $this->print_status("\n");
-     
+    $this->print_status("\tproject\t\tCreate new project. Based on Configuration file.\n");
+    $this->print_status("\t\tUsage: create project\n\n");
+    $this->print_status("\tdao\t\tCreate new DAO.\n");
+    $this->print_status("\t\tUsage: create dao <name-of-DAO> [,<name-of-table>]\n\n");
+    $this->print_status("\tvalueobject\tCreate new ValueObject.\n");
+    $this->print_status("\t\tUsage: create valueobject <name-of-vo>\n\n");
+    $this->print_status("\tconfigfile\tCreate new Configuration File.\n");
+    $this->print_status("\t\tUsage: create configfile [,<output-path>]\n\n");
+    $this->print_status("\tindex\t\tCreate new index PHP file.\n");
+    $this->print_status("\t\tUsage: create index [,<output-path>]\n\n");
+    $this->print_status("\tdirectories\tCreate new project directories.\n");
+    $this->print_status("\t\tUsage: create directories\n\n");
+    $this->print_status("\n");     
   }
 
-  public function dao($name, $tableName) {
+  public function project() {
+    $this->index();
+    $this->directories();
+    $this->controller('home');
+    $this->view('home');
+  }
+
+  public function page($name, $template = NULL) {
+    $this->controller($name);
+    $this->view($name, $template);
+  }
+
+  public function createDir($dirname) {
+    if (file_exists($dirname)) {
+      $this->print_error("file '$dirname' already exists...");
+      return FALSE;
+    }
+
+    if (mkdir($dirname, 0777, true)) {
+      $this->print_success("[CREATED] " . $dirname);
+      return TRUE;
+    } else {
+      $this->print_error("[ERROR] " . $dirname);
+      return FALSE;
+    }
+  }
+
+  public function directories() {
+    $this->createDir($this->config->getLibDir());
+    $this->createDir($this->config->getControllerDir());
+    $this->createDir($this->config->getViewDir());
+    $this->createDir($this->config->getModelDir());
+    $this->createDir($this->config->getDaoDir());
+    $this->createDir($this->config->getVoDir());    
+  }
+
+  public function controller($cname) {
+    $controllerName = ucfirst($cname);
+    $control_tpl = dirname($_SERVER['SCRIPT_FILENAME']) . '/tpl/controller.tpl';
+
+    if (!file_exists($control_tpl)) {
+      $this->print_error("SecPlus-PHP resource file '$control_tpl' not found.\naborting...");
+      die();
+    }
+
+    $control_src = file_get_contents($control_tpl);
+
+    if (empty($control_src)) {
+      $this->print_error("Permission denied to open '$control_tpl'.");
+      return;
+    }
+
+    $control_src = str_replace("{#controller_name#}", $controllerName, $control_src);
+
+    $output = $this->project_dir . '/' . $this->config->getControllerDir() . '/' . $controllerName . 'Controller.php';    
+    
+    if (!file_put_contents($output, $control_src)) {
+      $this->print_error("[-] Failed to write on file '$output'");
+      return;
+    } else {
+      $this->print_success("[+] Controller '{$controllerName}Controller created with success.");
+      $this->print_success("Output: $output");
+    } 
+  }
+
+  /**
+   * Create new View file.
+   * @param $name String
+   * @param $tpl_file String pathname
+   * @return void
+   */
+  public function view($name, $tpl_file = NULL) {
+    $viewName = ucfirst($name);
+    $view_tpl = !empty($tpl_file) ? $tpl_file : dirname($_SERVER['SCRIPT_FILENAME']) . '/tpl/view.tpl';
+
+    if (!file_exists($view_tpl)) {
+      $this->print_error("SecPlus-PHP resource file '$view_tpl' not found.\naborting...");
+      die();
+    }
+
+    $view_src = file_get_contents($view_tpl);
+    $view_src = str_replace("{#view_name#}", $viewName, $view_src);
+
+    if (empty($view_src)) {
+      $this->print_error("Permission denied to open '$view_tpl'.");
+      return;
+    }
+
+    $output = $this->project_dir . '/' . $this->config->getViewDir() . '/' . $viewName . 'View.php';
+    
+    if (!file_put_contents($output, $view_src)) {
+      $this->print_error("[-] Failed to write on file '$output'");
+      return;
+    } else {
+      $this->print_success("[+] View '{$viewName}View created with success.");
+      $this->print_success("Output: $output");
+    } 
+  }
+
+  public function index() {
+    $index_file = dirname($_SERVER['SCRIPT_FILENAME']) . '/tpl/index.tpl';
+    if (!file_exists($index_file)) {
+      $this->print_error("SecPlus-PHP resource file '$index_file' not found.\naborting...");
+      die();
+    }
+
+    $index_src = file_get_contents($index_file);
+    $secplus_path = $_SERVER['SCRIPT_FILENAME'];
+    $index_src = str_replace("{#secplus_framework_path#}", $secplus_path, $index_src);
+    $index_src = str_replace("{#config_file#}", $this->config_file, $index_src);
+
+    $output = $this->project_dir . '/index.php';
+    if (!file_put_contents($output, $index_src)) {
+      $this->print_error("[-] Failed to write on file '$output'");
+      return;
+    } else {
+      $this->print_success("[+] Index created with success.");
+      $this->print_success("Output: $output");
+    }
+  }
+
+  public function dao($name, $tableName = "") {
+    if (empty($name)) {
+      $this->print_error("argument name not supplied.");
+      $this->help();
+      return;
+    }
+    
     $voName = ucfirst($name);
     $daoName = $voName . 'DAO';
     $dao_src = "";
@@ -930,6 +1077,8 @@ class CreateCommand extends ShellCmd {
 
     $dao_src = str_replace('{#dao_name#}', $daoName, $dao_src);
     $dao_src = str_replace('{#model_extends#}', $this->abstractModelClass, $dao_src);
+    
+    $dao_src = str_replace('{#table_name#}', !empty($tableName) ? 'protected $_tableName = "' . $tableName . '";' : "", $dao_src);
     
     $output = $this->project_dir . '/' . $this->config->getDaoDir() . '/' . $daoName . '.php';
     if (!file_put_contents($output, $dao_src)) {
@@ -961,23 +1110,24 @@ class CreateCommand extends ShellCmd {
     }
   }
 
-  public function configfile($config_file) {
-    $conf_tpl_fname = dirname($_SERVER['SCRIPT_FILENAME']) . '/tpl/config_tpl_fname.tpl';
+  public static function configfile($config_file = 'config.php') {
+    $conf_tpl_fname = dirname($_SERVER['SCRIPT_FILENAME']) . '/tpl/configfile.tpl';
     $conf_src = file_get_contents($conf_tpl_fname);
 
     if (empty($conf_src)) {
-      $this->print_error("Failed to open SecPlus-PHP resource file '{$conf_tpl_fname}'.");
-      die();
+      print("[-] Failed to open SecPlus-PHP resource file '{$conf_tpl_fname}'.\n");
+      return FALSE;
     }
 
     $output = $config_file;
 
     if (!file_put_contents($output, $conf_src)) {
-      $this->print_error("[-] Failed to write on file '$output'");
-      return;
+      $this->print_error("[-] Failed to write on file '$output'\n");
+      return FALSE;
     } else {
-      $this->print_success("[+] Config file '$config_file' created with success.");
-      $this->print_success("Output: $output");
+      print("[+] Config file '$config_file' created with success.\n");
+      print("[+] Output: $output\n");
+      return TRUE;
     }
   }
 
@@ -986,8 +1136,21 @@ class CreateCommand extends ShellCmd {
   }
 }
 
+class ExitCommand extends ShellCmd {
+  public function help() {}
+  public function auto() {
+    $this->print_success("Exiting...");
+    if (function_exists('readline_write_history')) {
+      $history = dirname($_SERVER['SCRIPT_FILENAME']) . '/.secplus_history';
+      readline_write_history($history);
+    }
+
+    exit(0);
+  }
+}
+
 class Shell {
-  protected $prompt = "SEC+> ";
+  const prompt = "SEC+> ";
   protected $config;
   protected $config_file = 'config.php';
 
@@ -1007,7 +1170,7 @@ class Shell {
     } else {
       print "[-] file '{$this->config_file}' not exists or permission denied to open.\n";
       print "[-] we need a configuration file to run scaffolding commands.\n";
-      print "[?] You want that we generate the '{$this->config_file}' for you? [y/N]";
+      print "[?] You want that we generate the '{$this->config_file}' for you? [y/N] ";
       $opt = Shell::readInput();
       if (empty($opt)||($opt != "y" && $opt != "Y")) {
         print "[-] aborting...\n";
@@ -1023,23 +1186,42 @@ class Shell {
   }
 
   public function generateConfig($config_file) {
-    $creator = new CreateCommand();
-    $creator->configfile($config_file);
+    return CreateCommand::configfile($config_file);
   }
 
   public function loopExecute() {
+    if (function_exists('readline_read_history')) {
+      readline_read_history(dirname($_SERVER['SCRIPT_FILENAME']) . '/.secplus_history');
+    }
+
     while(1) {
-      print $this->prompt;
       $command = Shell::readInput();
       $this->execute($command);
     }
   }
 
   public static function readInput() {
-    return str_replace(array("\r","\n"), null, fread(STDIN, 1024));
+    $str = "";
+    if (function_exists("readline")) {
+      $str = readline(Shell::prompt);
+      readline_add_history($str);
+    } else {
+      print Shell::prompt;
+      $str = str_replace(array("\r","\n"), null, fread(STDIN, 1024));
+    }
+
+    return $str;
   }
 
   public function execute($command) {
+    /* readline returns FALSE for CTRL+D */
+    if ($command == FALSE) {
+      print "\n";
+      $exit = new ExitCommand();
+      $exit->auto();
+      return;
+    }
+    
     $params = explode(" ", $command);
     
     $classname = __NAMESPACE__ . '\\' . $params[0] . 'Command';
@@ -1065,6 +1247,7 @@ class Shell {
     }
     
     $class = new $classname($this->config, dirname($this->config_file));
+    $class->setConfigFile($this->config_file);
 
     if (!method_exists($class, $action)) {      
       print "[-] error: command '$main_command' does not have a action '$action'.\n";
@@ -1087,7 +1270,7 @@ class Shell {
 
 if (php_sapi_name() == "cli") {
   secplus_cmd();
-}
+ }
 
 function secplus_cmd() {
   global $argc;

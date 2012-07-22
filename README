@@ -5,10 +5,27 @@ and performance.
 
 Author: i4k   - Tiago Natel de Moura
 
-API Documentation: 
-http://www.secplus.com.br/secplus-php/doc/html/
+API Documentation:
+http://www.secplus.com.br/secplus-php/doc/html/index.html
 
 SEC+   - http://www.secplus.com.br/
 bugsec - http://bugsec.googlecode.com/
+
+=== Documentation ===
+
+Create the directory of your project.
+$ mkdir /var/www/myportal
+$ cd /var/www/myportal
+
+Create the libraries directory with the name you want:
+For example:
+$ mkdir lib/
+$ cd lib/
+
+Get the current SecPlus-PHP library from github:
+$ git clone https://github.com/SecPlus/secplus-php.git
+$ ls
+secplus-php
+
 
 
