@@ -990,7 +990,7 @@ class CreateCommand extends ShellCmd {
       $this->print_error("[-] Failed to write on file '$output'");
       return;
     } else {
-      $this->print_success("[+] Controller '{$controllerName}Controller created with success.");
+      $this->print_success("Controller '{$controllerName}Controller created with success.");
       $this->print_success("Output: $output");
     } 
   }
@@ -1021,10 +1021,10 @@ class CreateCommand extends ShellCmd {
     $output = $this->project_dir . '/' . $this->config->getViewDir() . '/' . $viewName . 'View.php';
     
     if (!file_put_contents($output, $view_src)) {
-      $this->print_error("[-] Failed to write on file '$output'");
+      $this->print_error("Failed to write on file '$output'");
       return;
     } else {
-      $this->print_success("[+] View '{$viewName}View created with success.");
+      $this->print_success("View '{$viewName}View created with success.");
       $this->print_success("Output: $output");
     } 
   }
@@ -1043,10 +1043,10 @@ class CreateCommand extends ShellCmd {
 
     $output = $this->project_dir . '/index.php';
     if (!file_put_contents($output, $index_src)) {
-      $this->print_error("[-] Failed to write on file '$output'");
+      $this->print_error("Failed to write on file '$output'");
       return;
     } else {
-      $this->print_success("[+] Index created with success.");
+      $this->print_success("Index created with success.");
       $this->print_success("Output: $output");
     }
   }
@@ -1171,7 +1171,7 @@ class Shell {
       print "[-] file '{$this->config_file}' not exists or permission denied to open.\n";
       print "[-] we need a configuration file to run scaffolding commands.\n";
       print "[?] You want that we generate the '{$this->config_file}' for you? [y/N] ";
-      $opt = Shell::readInput();
+      $opt = Shell::readInput(false);
       if (empty($opt)||($opt != "y" && $opt != "Y")) {
         print "[-] aborting...\n";
         die();
@@ -1200,10 +1200,10 @@ class Shell {
     }
   }
 
-  public static function readInput() {
+  public static function readInput($with_prompt = true) {
     $str = "";
     if (function_exists("readline")) {
-      $str = readline(Shell::prompt);
+      $str = readline($with_prompt == true ? Shell::prompt : "");
       readline_add_history($str);
     } else {
       print Shell::prompt;
