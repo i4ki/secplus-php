@@ -1,0 +1,139 @@
+.TH "SecPlus::AbstractModel" 3 "Sat Jul 21 2012" "Version 1.0" "SecPlus-PHP Web Framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+SecPlus::AbstractModel \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherits \fBIModel\fP.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fB__construct\fP ()"
+.br
+.ti -1c
+.RI "\fB_connect\fP ()"
+.br
+.ti -1c
+.RI "\fBsetTableName\fP ($tname)"
+.br
+.ti -1c
+.RI "\fBgetTableName\fP ()"
+.br
+.ti -1c
+.RI "\fBsetValueObjectName\fP ($name)"
+.br
+.ti -1c
+.RI "\fB_setupDAO\fP ()"
+.br
+.ti -1c
+.RI "\fBget\fP ($id)"
+.br
+.ti -1c
+.RI "\fBgetAll\fP ()"
+.br
+.ti -1c
+.RI "\fBupdate\fP ($obj)"
+.br
+.ti -1c
+.RI "\fBsave\fP ($obj)"
+.br
+.ti -1c
+.RI "\fBmap2object\fP ($user, $res)"
+.br
+.ti -1c
+.RI "\fBmap2array\fP ($res)"
+.br
+.in -1c
+.SS "Static Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "static \fB$conn\fP = null"
+.br
+.in -1c
+.SS "Protected Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fB$config\fP"
+.br
+.ti -1c
+.RI "\fB$_table_name\fP"
+.br
+.ti -1c
+.RI "\fB$_id_name\fP = 'id'"
+.br
+.ti -1c
+.RI "\fB$_vo_name\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Every Model need extend this abstract class 
+.PP
+Definition at line 370 of file secplus.lib.php.
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "__construct ()"
+.PP
+Definition at line 380 of file secplus.lib.php.
+.SH "Member Function Documentation"
+.PP 
+.SS "_connect ()"
+.PP
+Definition at line 385 of file secplus.lib.php.
+.SS "_setupDAO ()"
+.PP
+Definition at line 401 of file secplus.lib.php.
+.SS "get ($id)"
+.PP
+Definition at line 406 of file secplus.lib.php.
+.SS "getAll ()"
+.PP
+Definition at line 440 of file secplus.lib.php.
+.SS "getTableName ()"
+.PP
+Definition at line 393 of file secplus.lib.php.
+.SS "map2array ($res)"
+.PP
+Definition at line 541 of file secplus.lib.php.
+.SS "map2object ($user, $res)"
+.PP
+Definition at line 530 of file secplus.lib.php.
+.SS "save ($obj)"
+.PP
+Definition at line 500 of file secplus.lib.php.
+.SS "setTableName ($tname)"
+.PP
+Definition at line 389 of file secplus.lib.php.
+.SS "setValueObjectName ($name)"
+.PP
+Definition at line 397 of file secplus.lib.php.
+.SS "update ($obj)"
+.PP
+Definition at line 469 of file secplus.lib.php.
+.SH "Field Documentation"
+.PP 
+.SS "$_id_name = 'id'\fC [protected]\fP"
+.PP
+Definition at line 377 of file secplus.lib.php.
+.SS "$_table_name\fC [protected]\fP"
+.PP
+Definition at line 376 of file secplus.lib.php.
+.SS "$_vo_name\fC [protected]\fP"
+.PP
+Definition at line 378 of file secplus.lib.php.
+.SS "$config\fC [protected]\fP"
+.PP
+Definition at line 375 of file secplus.lib.php.
+.SS "$conn = null\fC [static]\fP"Singleton instance of the database connection 
+.PP
+Definition at line 374 of file secplus.lib.php.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for SecPlus-PHP Web Framework from the source code.

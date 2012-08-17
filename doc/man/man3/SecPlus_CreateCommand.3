@@ -1,0 +1,135 @@
+.TH "SecPlus::CreateCommand" 3 "Sat Jul 21 2012" "Version 1.0" "SecPlus-PHP Web Framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+SecPlus::CreateCommand \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherits \fBShellCmd\fP.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fB__construct\fP ($config, $project_dir)"
+.br
+.ti -1c
+.RI "\fBhelp\fP ()"
+.br
+.ti -1c
+.RI "\fBproject\fP ()"
+.br
+.ti -1c
+.RI "\fBpage\fP ($name, $template=NULL)"
+.br
+.ti -1c
+.RI "\fBcreateDir\fP ($dirname)"
+.br
+.ti -1c
+.RI "\fBdirectories\fP ()"
+.br
+.ti -1c
+.RI "\fBcontroller\fP ($cname)"
+.br
+.ti -1c
+.RI "\fBview\fP ($name, $tpl_file=NULL)"
+.br
+.ti -1c
+.RI "\fBindex\fP ()"
+.br
+.ti -1c
+.RI "\fBdao\fP ($name, $tableName='')"
+.br
+.ti -1c
+.RI "\fBvalueobject\fP ($vo_name)"
+.br
+.ti -1c
+.RI "\fBvo\fP ($vo_name)"
+.br
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static \fBconfigfile\fP ($config_file= 'config.php')"
+.br
+.in -1c
+.SS "Protected Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fB$abstractModelClass\fP = 'SecPlus\\\fBAbstractModel\fP'"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 904 of file secplus.lib.php.
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "__construct ($config, $project_dir)"
+.PP
+Definition at line 907 of file secplus.lib.php.
+.SH "Member Function Documentation"
+.PP 
+.SS "static configfile ($config_file = \fC'config.php'\fP)\fC [static]\fP"
+.PP
+Definition at line 1113 of file secplus.lib.php.
+.SS "controller ($cname)"
+.PP
+Definition at line 969 of file secplus.lib.php.
+.SS "createDir ($dirname)"
+.PP
+Definition at line 945 of file secplus.lib.php.
+.SS "dao ($name, $tableName = \fC''\fP)"
+.PP
+Definition at line 1054 of file secplus.lib.php.
+.SS "directories ()"
+.PP
+Definition at line 960 of file secplus.lib.php.
+.SS "help ()"
+.PP
+Implements \fBIShellCommand\fP.
+.PP
+Definition at line 912 of file secplus.lib.php.
+.SS "index ()"
+.PP
+Definition at line 1032 of file secplus.lib.php.
+.SS "page ($name, $template = \fCNULL\fP)"
+.PP
+Definition at line 940 of file secplus.lib.php.
+.SS "project ()"
+.PP
+Definition at line 933 of file secplus.lib.php.
+.SS "valueobject ($vo_name)"
+.PP
+Definition at line 1093 of file secplus.lib.php.
+.SS "view ($name, $tpl_file = \fCNULL\fP)"Create new View file. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fI$name\fP String 
+.br
+\fI$tpl_file\fP String pathname 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+void 
+.RE
+.PP
+
+.PP
+Definition at line 1004 of file secplus.lib.php.
+.SS "vo ($vo_name)"
+.PP
+Definition at line 1134 of file secplus.lib.php.
+.SH "Field Documentation"
+.PP 
+.SS "$abstractModelClass = 'SecPlus\\\fBAbstractModel\fP'\fC [protected]\fP"
+.PP
+Definition at line 905 of file secplus.lib.php.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for SecPlus-PHP Web Framework from the source code.

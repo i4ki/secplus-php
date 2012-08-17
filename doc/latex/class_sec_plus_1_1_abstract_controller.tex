@@ -1,0 +1,149 @@
+\hypertarget{class_sec_plus_1_1_abstract_controller}{
+\section{AbstractController Class Reference}
+\label{class_sec_plus_1_1_abstract_controller}\index{SecPlus::AbstractController@{SecPlus::AbstractController}}
+}
+
+
+Inheritance diagram for AbstractController:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=196pt]{class_sec_plus_1_1_abstract_controller__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for AbstractController:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=174pt]{class_sec_plus_1_1_abstract_controller__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_sec_plus_1_1_abstract_controller_aaea51da477f979105350d62a6a213bf8}{\_\-setupController} ()
+\item 
+\hyperlink{class_sec_plus_1_1_abstract_controller_aed6cc3b0ceef7b2c94e31be0c01269f1}{handleAction} ()
+\item 
+\hyperlink{class_sec_plus_1_1_abstract_controller_abe9ca2245705c74dc5d6a1a69a68539b}{render} (\$view, \$arr\_\-vars=array())
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_sec_plus_1_1_abstract_controller_a49c7011be9c979d9174c52a8b83e5d8e}{\$config}
+\item 
+\hyperlink{class_sec_plus_1_1_abstract_controller_aefaf43fa290523c54179f350e96f76c0}{\$\_\-controller}
+\item 
+\hyperlink{class_sec_plus_1_1_abstract_controller_a98d6222017265001c7eb9bcd44ad8ae7}{\$\_\-action}
+\item 
+\hyperlink{class_sec_plus_1_1_abstract_controller_a7ee199b82a5324150f9b8506fa9c6ad7}{\$vars\_\-export} = array()
+\item 
+\hyperlink{class_sec_plus_1_1_abstract_controller_a2114141e9aaf630ff155f81f67d7e406}{\$safe\_\-actions} = array()
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Every Controller need extend this abstract class 
+
+Definition at line 304 of file secplus.lib.php.
+
+
+
+\subsection{Member Function Documentation}
+\hypertarget{class_sec_plus_1_1_abstract_controller_aaea51da477f979105350d62a6a213bf8}{
+\index{SecPlus::AbstractController@{SecPlus::AbstractController}!\_\-setupController@{\_\-setupController}}
+\index{\_\-setupController@{\_\-setupController}!SecPlus::AbstractController@{SecPlus::AbstractController}}
+\subsubsection[{\_\-setupController}]{\setlength{\rightskip}{0pt plus 5cm}\_\-setupController (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}
+\label{class_sec_plus_1_1_abstract_controller_aaea51da477f979105350d62a6a213bf8}
+
+
+Definition at line 318 of file secplus.lib.php.
+
+\hypertarget{class_sec_plus_1_1_abstract_controller_aed6cc3b0ceef7b2c94e31be0c01269f1}{
+\index{SecPlus::AbstractController@{SecPlus::AbstractController}!handleAction@{handleAction}}
+\index{handleAction@{handleAction}!SecPlus::AbstractController@{SecPlus::AbstractController}}
+\subsubsection[{handleAction}]{\setlength{\rightskip}{0pt plus 5cm}handleAction (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}
+\label{class_sec_plus_1_1_abstract_controller_aed6cc3b0ceef7b2c94e31be0c01269f1}
+
+
+Definition at line 338 of file secplus.lib.php.
+
+\hypertarget{class_sec_plus_1_1_abstract_controller_abe9ca2245705c74dc5d6a1a69a68539b}{
+\index{SecPlus::AbstractController@{SecPlus::AbstractController}!render@{render}}
+\index{render@{render}!SecPlus::AbstractController@{SecPlus::AbstractController}}
+\subsubsection[{render}]{\setlength{\rightskip}{0pt plus 5cm}render (
+\begin{DoxyParamCaption}
+\item[{\$}]{view, }
+\item[{\$}]{arr\_\-vars = {\ttfamily array()}}
+\end{DoxyParamCaption}
+)}}
+\label{class_sec_plus_1_1_abstract_controller_abe9ca2245705c74dc5d6a1a69a68539b}
+Renderize the view
+
+\$view is the name of the view to render. \$arr\_\-vars is an array of variables to export to be visible in the view file context. 
+
+Definition at line 353 of file secplus.lib.php.
+
+
+
+\subsection{Field Documentation}
+\hypertarget{class_sec_plus_1_1_abstract_controller_a98d6222017265001c7eb9bcd44ad8ae7}{
+\index{SecPlus::AbstractController@{SecPlus::AbstractController}!\$\_\-action@{\$\_\-action}}
+\index{\$\_\-action@{\$\_\-action}!SecPlus::AbstractController@{SecPlus::AbstractController}}
+\subsubsection[{\$\_\-action}]{\setlength{\rightskip}{0pt plus 5cm}\$\_\-action\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{class_sec_plus_1_1_abstract_controller_a98d6222017265001c7eb9bcd44ad8ae7}
+
+
+Definition at line 312 of file secplus.lib.php.
+
+\hypertarget{class_sec_plus_1_1_abstract_controller_aefaf43fa290523c54179f350e96f76c0}{
+\index{SecPlus::AbstractController@{SecPlus::AbstractController}!\$\_\-controller@{\$\_\-controller}}
+\index{\$\_\-controller@{\$\_\-controller}!SecPlus::AbstractController@{SecPlus::AbstractController}}
+\subsubsection[{\$\_\-controller}]{\setlength{\rightskip}{0pt plus 5cm}\$\_\-controller\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{class_sec_plus_1_1_abstract_controller_aefaf43fa290523c54179f350e96f76c0}
+
+
+Definition at line 310 of file secplus.lib.php.
+
+\hypertarget{class_sec_plus_1_1_abstract_controller_a49c7011be9c979d9174c52a8b83e5d8e}{
+\index{SecPlus::AbstractController@{SecPlus::AbstractController}!\$config@{\$config}}
+\index{\$config@{\$config}!SecPlus::AbstractController@{SecPlus::AbstractController}}
+\subsubsection[{\$config}]{\setlength{\rightskip}{0pt plus 5cm}\$config\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{class_sec_plus_1_1_abstract_controller_a49c7011be9c979d9174c52a8b83e5d8e}
+Singleton instance of the \hyperlink{class_sec_plus_1_1_config}{Config} class. 
+
+Definition at line 308 of file secplus.lib.php.
+
+\hypertarget{class_sec_plus_1_1_abstract_controller_a2114141e9aaf630ff155f81f67d7e406}{
+\index{SecPlus::AbstractController@{SecPlus::AbstractController}!\$safe\_\-actions@{\$safe\_\-actions}}
+\index{\$safe\_\-actions@{\$safe\_\-actions}!SecPlus::AbstractController@{SecPlus::AbstractController}}
+\subsubsection[{\$safe\_\-actions}]{\setlength{\rightskip}{0pt plus 5cm}\$safe\_\-actions = array()\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{class_sec_plus_1_1_abstract_controller_a2114141e9aaf630ff155f81f67d7e406}
+
+
+Definition at line 316 of file secplus.lib.php.
+
+\hypertarget{class_sec_plus_1_1_abstract_controller_a7ee199b82a5324150f9b8506fa9c6ad7}{
+\index{SecPlus::AbstractController@{SecPlus::AbstractController}!\$vars\_\-export@{\$vars\_\-export}}
+\index{\$vars\_\-export@{\$vars\_\-export}!SecPlus::AbstractController@{SecPlus::AbstractController}}
+\subsubsection[{\$vars\_\-export}]{\setlength{\rightskip}{0pt plus 5cm}\$vars\_\-export = array()\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{class_sec_plus_1_1_abstract_controller_a7ee199b82a5324150f9b8506fa9c6ad7}
+
+
+Definition at line 314 of file secplus.lib.php.
+
+
+
+The documentation for this class was generated from the following file:\begin{DoxyCompactItemize}
+\item 
+\hyperlink{secplus_8lib_8php}{secplus.lib.php}\end{DoxyCompactItemize}

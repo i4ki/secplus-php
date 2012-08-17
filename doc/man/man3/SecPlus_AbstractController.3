@@ -1,0 +1,83 @@
+.TH "SecPlus::AbstractController" 3 "Sat Jul 21 2012" "Version 1.0" "SecPlus-PHP Web Framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+SecPlus::AbstractController \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherits \fBIController\fP.
+.PP
+Inherited by \fBAbstractAuthController\fP.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fB_setupController\fP ()"
+.br
+.ti -1c
+.RI "\fBhandleAction\fP ()"
+.br
+.ti -1c
+.RI "\fBrender\fP ($view, $arr_vars=array())"
+.br
+.in -1c
+.SS "Protected Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fB$config\fP"
+.br
+.ti -1c
+.RI "\fB$_controller\fP"
+.br
+.ti -1c
+.RI "\fB$_action\fP"
+.br
+.ti -1c
+.RI "\fB$vars_export\fP = array()"
+.br
+.ti -1c
+.RI "\fB$safe_actions\fP = array()"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Every Controller need extend this abstract class 
+.PP
+Definition at line 304 of file secplus.lib.php.
+.SH "Member Function Documentation"
+.PP 
+.SS "_setupController ()"
+.PP
+Definition at line 318 of file secplus.lib.php.
+.SS "handleAction ()"
+.PP
+Definition at line 338 of file secplus.lib.php.
+.SS "render ($view, $arr_vars = \fCarray()\fP)"Renderize the view
+.PP
+$view is the name of the view to render. $arr_vars is an array of variables to export to be visible in the view file context. 
+.PP
+Definition at line 353 of file secplus.lib.php.
+.SH "Field Documentation"
+.PP 
+.SS "$_action\fC [protected]\fP"
+.PP
+Definition at line 312 of file secplus.lib.php.
+.SS "$_controller\fC [protected]\fP"
+.PP
+Definition at line 310 of file secplus.lib.php.
+.SS "$config\fC [protected]\fP"Singleton instance of the \fBConfig\fP class. 
+.PP
+Definition at line 308 of file secplus.lib.php.
+.SS "$safe_actions = array()\fC [protected]\fP"
+.PP
+Definition at line 316 of file secplus.lib.php.
+.SS "$vars_export = array()\fC [protected]\fP"
+.PP
+Definition at line 314 of file secplus.lib.php.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for SecPlus-PHP Web Framework from the source code.

@@ -1,0 +1,366 @@
+.TH "SecPlus::Config" 3 "Sat Jul 21 2012" "Version 1.0" "SecPlus-PHP Web Framework" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+SecPlus::Config \- 
+.SH SYNOPSIS
+.br
+.PP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBsetEnvironment\fP ($env)"
+.br
+.ti -1c
+.RI "\fBgetEnvironment\fP ()"
+.br
+.ti -1c
+.RI "\fBisDebug\fP ()"
+.br
+.ti -1c
+.RI "\fB__call\fP ($func, $args)"
+.br
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static \fBgetInstance\fP ()"
+.br
+.ti -1c
+.RI "static \fBgetHost\fP ()"
+.br
+.ti -1c
+.RI "static \fBgetProjectUrl\fP ()"
+.br
+.ti -1c
+.RI "static \fBgetProjectBaseUrl\fP ()"
+.br
+.in -1c
+.SS "Data Fields"
+
+.in +1c
+.ti -1c
+.RI "const \fBPROJECT_NAME\fP = 'Sec+ \fBWebFramework\fP'"
+.br
+.ti -1c
+.RI "const \fBENV_PRODUCTION\fP = 0"
+.br
+.ti -1c
+.RI "const \fBENV_DEVELOPMENT\fP = 1"
+.br
+.in -1c
+.SS "Protected Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fB__construct\fP ()"
+.br
+.in -1c
+.SS "Protected Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fB$dbHost\fP = '127.0.0.1'"
+.br
+.ti -1c
+.RI "\fB$dbUser\fP = ''"
+.br
+.ti -1c
+.RI "\fB$dbPass\fP = ''"
+.br
+.ti -1c
+.RI "\fB$dbms\fP = 'mysql'"
+.br
+.ti -1c
+.RI "\fB$dbDatabase\fP = ''"
+.br
+.ti -1c
+.RI "\fB$salt\fP = 'Welcome, to the desert of the real'"
+.br
+.ti -1c
+.RI "\fB$rootProjectDir\fP"
+.br
+.ti -1c
+.RI "\fB$libDir\fP"
+.br
+.ti -1c
+.RI "\fB$controllerDir\fP"
+.br
+.ti -1c
+.RI "\fB$modelDir\fP"
+.br
+.ti -1c
+.RI "\fB$daoDir\fP"
+.br
+.ti -1c
+.RI "\fB$voDir\fP"
+.br
+.ti -1c
+.RI "\fB$viewDir\fP"
+.br
+.ti -1c
+.RI "\fB$staticDir\fP"
+.br
+.ti -1c
+.RI "\fB$safeFiles\fP = array()"
+.br
+.ti -1c
+.RI "\fB$safeProperties\fP"
+.br
+.ti -1c
+.RI "\fB$defaultController\fP = 'home'"
+.br
+.ti -1c
+.RI "\fB$defaultAction\fP = 'view'"
+.br
+.ti -1c
+.RI "\fB$controllerName\fP = 'controller'"
+.br
+.ti -1c
+.RI "\fB$actionName\fP = 'action'"
+.br
+.ti -1c
+.RI "\fB$defaultTitle\fP = 'SEC+ Security Architecture for Enterprises'"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Configuration class Extend this class to configure your project.
+.PP
+*NOT* change any default configuration in this class... Configure your project in the extended class. 
+.PP
+Definition at line 26 of file secplus.lib.php.
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "__construct ()\fC [protected]\fP"Constructor sets up the following properties: \fB$root_project_dir\fP \fB$lib_dir\fP \fB$controller_dir\fP \fB$model_dir\fP \fB$dao_dir\fP \fB$vo_dir\fP \fB$view_dir\fP \fB$static_dir\fP 
+.PP
+Definition at line 179 of file secplus.lib.php.
+.SH "Member Function Documentation"
+.PP 
+.SS "__call ($func, $args)"This is a PHP magic method. Implementing this method we avoid have to declare boilerplate getters and setters. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fI$func\fP 
+.br
+\fI$args\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+mixed 
+.RE
+.PP
+
+.PP
+Definition at line 204 of file secplus.lib.php.
+.SS "getEnvironment ()"
+.PP
+Definition at line 191 of file secplus.lib.php.
+.SS "static getHost ()\fC [static]\fP"
+.PP
+Definition at line 193 of file secplus.lib.php.
+.SS "static getInstance ()\fC [static]\fP"Get a Singleton instance of the configuration class 
+.PP
+\fBReturns:\fP
+.RS 4
+\fBConfig\fP 
+.RE
+.PP
+
+.PP
+Definition at line 158 of file secplus.lib.php.
+.SS "static getProjectBaseUrl ()\fC [static]\fP"
+.PP
+Definition at line 195 of file secplus.lib.php.
+.SS "static getProjectUrl ()\fC [static]\fP"
+.PP
+Definition at line 194 of file secplus.lib.php.
+.SS "isDebug ()"
+.PP
+Definition at line 192 of file secplus.lib.php.
+.SS "setEnvironment ($env)"
+.PP
+Definition at line 190 of file secplus.lib.php.
+.SH "Field Documentation"
+.PP 
+.SS "$actionName = 'action'\fC [protected]\fP"Name of the action. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIstring\fP 
+.RE
+.PP
+
+.PP
+Definition at line 146 of file secplus.lib.php.
+.SS "$controllerDir\fC [protected]\fP"
+.PP
+Definition at line 89 of file secplus.lib.php.
+.SS "$controllerName = 'controller'\fC [protected]\fP"MVC Configuration Name of the controllers. This is the name of the uri parameter that invoke the controller. ex.: http://site]/?[controllerName]=home 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIstring\fP 
+.RE
+.PP
+
+.PP
+Definition at line 140 of file secplus.lib.php.
+.SS "$daoDir\fC [protected]\fP"
+.PP
+Definition at line 91 of file secplus.lib.php.
+.SS "$dbDatabase = ''\fC [protected]\fP"\fBDatabase\fP name 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIstring\fP 
+.RE
+.PP
+
+.PP
+Definition at line 76 of file secplus.lib.php.
+.SS "$dbHost = '127.0.0.1'\fC [protected]\fP"\fBDatabase\fP configuration *Not* change the properties here, extend this abstract class and use the getters and setters to update the database configurations. \fBDatabase\fP host 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIstring\fP 
+.RE
+.PP
+
+.PP
+Definition at line 52 of file secplus.lib.php.
+.SS "$dbms = 'mysql'\fC [protected]\fP"\fBDatabase\fP driver 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIstring\fP 
+.RE
+.PP
+
+.PP
+Definition at line 70 of file secplus.lib.php.
+.SS "$dbPass = ''\fC [protected]\fP"\fBDatabase\fP password 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIstring\fP 
+.RE
+.PP
+
+.PP
+Definition at line 64 of file secplus.lib.php.
+.SS "$dbUser = ''\fC [protected]\fP"\fBDatabase\fP user 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIstring\fP 
+.RE
+.PP
+
+.PP
+Definition at line 58 of file secplus.lib.php.
+.SS "$defaultAction = 'view'\fC [protected]\fP"Default action to be called in case of anyone action specified in the URL. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIstring\fP 
+.RE
+.PP
+
+.PP
+Definition at line 128 of file secplus.lib.php.
+.SS "$defaultController = 'home'\fC [protected]\fP"Default controller to be called in case of anyone controller specified in the URL. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIstring\fP 
+.RE
+.PP
+
+.PP
+Definition at line 121 of file secplus.lib.php.
+.SS "$defaultTitle = 'SEC+ Security Architecture for Enterprises'\fC [protected]\fP"Default title for pages 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIstring\fP 
+.RE
+.PP
+
+.PP
+Definition at line 152 of file secplus.lib.php.
+.SS "$libDir\fC [protected]\fP"
+.PP
+Definition at line 88 of file secplus.lib.php.
+.SS "$modelDir\fC [protected]\fP"
+.PP
+Definition at line 90 of file secplus.lib.php.
+.SS "$rootProjectDir\fC [protected]\fP"Directory configuration 
+.PP
+Definition at line 87 of file secplus.lib.php.
+.SS "$safeFiles = array()\fC [protected]\fP"Safe PHP files to include to prevent LFI/LFD Array with every php file that is safe to include/require into project & 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIarray\fP 
+.RE
+.PP
+
+.PP
+Definition at line 101 of file secplus.lib.php.
+.SS "$safeProperties\fC [protected]\fP"\fBInitial value:\fP
+.PP
+.nf
+ array(
+                                    'rootProjectDir','libDir','controllerDir',
+                                    'modelDir','daoDir','voDir','viewDir','staticDir',
+                                    'dbHost','dbUser','dbPass','dbDatabase','dbms',
+                                    'salt','controllerName','actionName','safeFiles',
+                                    'defaultController', 'defaultAction', 'defaultTitle'
+                                    )
+.fi
+Safe PHP properties that can be used with __call. This prevent unrestricted php code execution. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIarray\fP 
+.RE
+.PP
+
+.PP
+Definition at line 108 of file secplus.lib.php.
+.SS "$salt = 'Welcome, to the desert of the real'\fC [protected]\fP"Salt for hash algorithms 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIstring\fP 
+.RE
+.PP
+
+.PP
+Definition at line 82 of file secplus.lib.php.
+.SS "$staticDir\fC [protected]\fP"
+.PP
+Definition at line 94 of file secplus.lib.php.
+.SS "$viewDir\fC [protected]\fP"
+.PP
+Definition at line 93 of file secplus.lib.php.
+.SS "$voDir\fC [protected]\fP"
+.PP
+Definition at line 92 of file secplus.lib.php.
+.SS "const \fBENV_DEVELOPMENT\fP = 1"
+.PP
+Definition at line 32 of file secplus.lib.php.
+.SS "const \fBENV_PRODUCTION\fP = 0"
+.PP
+Definition at line 31 of file secplus.lib.php.
+.SS "const \fBPROJECT_NAME\fP = 'Sec+ \fBWebFramework\fP'"
+.PP
+Definition at line 29 of file secplus.lib.php.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for SecPlus-PHP Web Framework from the source code.
