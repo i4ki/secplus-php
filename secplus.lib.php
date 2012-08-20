@@ -861,6 +861,7 @@ abstract class ShellCmd implements IShellCommand {
 
   public function setConfigFile($c) {
     $this->config_file = $c;
+    $this->project_dir = dirname($this->config_file);
   }
   
   /**
@@ -869,6 +870,10 @@ abstract class ShellCmd implements IShellCommand {
    */
   public function print_status($text) {
     print $text;
+  }
+
+  public function print_statusln($text) {
+    print $text . "\n";
   }
   
   public function print_success($text) {
@@ -901,14 +906,132 @@ class HelpCommand extends ShellCmd {
   }
 }
 
+class StatusCommand extends ShellCmd {  
+  public function auto() {
+    $this->stat_configuration();
+  }
+
+  public function stat_configuration() {
+    $this->print_statusln("Config file: \t\t" . $this->config_file);
+    $this->print_statusln("SecPlus-PHP directory: \t" . $this->config->getRootProjectDir());
+    $this->print_statusln("Library Dir: \t\t" . $this->config->getLibDir());
+    $this->print_statusln("Model directory: \t" . $this->config->getModelDir());
+    $this->print_statusln("View directory: \t" . $this->config->getViewDir());
+    $this->print_statusln("Controller directory: \t" . $this->config->getControllerDir());
+    $this->print_statusln("Value Objects dir: \t". $this->config->getVoDir());
+    $this->print_statusln("DAO directory: \t\t" . $this->config->getDaoDir());
+  }
+
+  /** TODO **/
+  public function view() {
+    $countFiles = 0;
+    $viewDir = $this->config->getViewDir();
+    $valids = $this->check_files($viewDir);
+    $countFiles = count($valids);
+
+    $this->print_success("Found $countFiles valid views.\n");
+  }
+
+  public function controller() {
+    $controllerDir = $this->config->getControllerDir();
+    $valids = $this->check_files($controllerDir);
+    $countFiles = count($valids);
+
+    $this->print_success("Found $countFiles valid controllers.\n");
+  }
+  
+  public function check_files($directory) {
+    $path2delete = array();
+    $path2delete2 = array();
+    $path2fix = array();
+    $vdir = $directory;
+    $iterator = Shell::getFiles($vdir);
+    $files = array();
+    foreach ($iterator as $path) {
+      if ($path->isDir()) {
+        continue;
+      } else if (in_array($path->__toString(), $this->config->getSafeFiles())) {
+        $files[] = $path->__toString();
+        if (preg_match("/php$/", $path->__toString())) {
+          $content = file_get_contents($path->__toString());
+          if (preg_match('/header\(\"HTTP\/1\.1 404 Not Found/', $content)) {
+            $this->print_success($path->__toString());
+          } else {
+            $this->print_status("[!][WARN][UNRESTRICTED ACCESS][" . $path->__toString() . "]\n");
+            $path2fix[] = $path->__toString();
+          }  
+        } else {
+          $this->print_status("[!] WARN: INSECURE EXTENSION: ");
+          $this->print_statusln("[".$path->__toString()."]");
+          $path2delete[] = $path->__toString();
+        }
+      } else {
+        $this->print_status("[!] WARN: UNSAFE FILE: " . $path->__toString() . "]\n");
+        $path2delete2[] = $path->__toString();
+      }
+    }
+
+    if (count($path2delete) > 0) {
+      $this->print_status("\n[INSECURE EXTENSION] Some files doesn't have '.php' extension, this could be a security problem if the directory of this files are inside the document root of the web server. Any attacker can execute this files and compromise the confidentiality of your application. By default, most webservers show the contents of files with unknown extensions as plain text.\n");
+      $this->print_status("Do you want delete this files? [y/N] ");
+      $resp = Shell::readInput(false);
+      if ($resp == 'Y' || $resp == 'y') {
+        Shell::deleteFiles($path2delete);
+      }
+    }
+
+    if (count($path2fix) > 0) {
+      $this->print_status("\n[UNRESTRICTED ACCESS] It's a security problem not restrict access to internal objects like Models, Views, Controllers, DAOs, etc. The majority of this files could leak usefull information for attackers. This flaw is called 'Insecure Direct Object Reference' and you can obtain more information in the link below: \nhttps://www.owasp.org/index.php/Top_10_2010-A4-Insecure_Direct_Object_References\nThis is a very simple check to see if the file returns a 404 HTTP response in case of directly accessed. If you know that the files warned above are safe, doesn't worry about the alert.\n");
+    
+      $this->print_status("Do you want fix this problems? [y/N] ");
+      $resp = Shell::readInput(false);
+      if ($resp == 'Y' || $resp == 'y') {
+        foreach ($path2fix as $p) {
+          $this->print_success("fixing '" . $p . "'");
+          $tpl_fake_404 = dirname(__FILE__) . '/tpl/fake_404.tpl';
+          if (!file_exists($tpl_fake_404)) {
+            $this->print_error("SecPLus-PHP Resource file not found (" . $tpl_fake_404 . ").\n");
+            die();
+          }
+        
+          $content = file_get_contents($p);
+          $new_content = file_get_contents($tpl_fake_404) . "\n" . $content;
+          if (file_put_contents($p, $new_content) == FALSE) {
+            $this->print_error("Permission denied to fix the file '" . $p . "'");
+          }
+        }
+      }
+    }
+
+    if (count($path2delete2) > 0) {
+      $this->print_status("\n[UNSAFE FILE] Every model, view and controller file of your project NEED be referenced in the safe_files property of configuration file. If this is not the case, your application could be affected by 'Insecure Direct Object Reference' flaw and the attacker could compromise the confidentiality of your application. It's extremely recommended to verify the UNSAFE FILES listed above and add them to the safe_files in the correct case. \nIf you want more information of this kind of vulnerability, follow the link below:\nhttps://www.owasp.org/index.php/Top_10_2010-A4-Insecure_Direct_Object_References\nYou want *PERMANENTLY DELETE* the *unsafe* files? [y/N] ");
+      $resp = Shell::readInput(false);
+      if ($resp == 'Y' || $resp == 'y') {
+        Shell::deleteFiles($path2delete2);
+      }
+    }
+
+    return $files;
+  }
+
+  public function help() {
+    $this->print_status("Status help:\n");
+    $this->print_status("This command will show information about the project, like controllers, models, views. etc.\n");
+    $this->print_status("Actions:\n");
+    $this->print_status("\tcontroller\n");
+    $this->print_status("\tview\n");
+    $this->print_status("\tmodel\n");
+    $this->print_status("\tconfig\n");
+  }
+  
+  public function status() {
+    $this->auto();
+  }
+}
+
 class CreateCommand extends ShellCmd {
   protected $abstractModelClass = 'SecPlus\AbstractModel';
   
-  public function __construct($config, $project_dir) {
-    $this->config = $config;
-    $this->project_dir = $project_dir;
-  }
-
   public function help() {
     $this->print_status("create help:\n");
     $this->print_status("Command to generate scaffolding. With 'create' you could create\n");
@@ -1003,14 +1126,15 @@ class CreateCommand extends ShellCmd {
    */
   public function view($name, $tpl_file = NULL) {
     $viewName = ucfirst($name);
+    $tpl_fake_404 = dirname($_SERVER['SCRIPT_FILENAME']) . '/tpl/fake_404.tpl';
     $view_tpl = !empty($tpl_file) ? $tpl_file : dirname($_SERVER['SCRIPT_FILENAME']) . '/tpl/view.tpl';
 
-    if (!file_exists($view_tpl)) {
-      $this->print_error("SecPlus-PHP resource file '$view_tpl' not found.\naborting...");
+    if (!file_exists($view_tpl) || !file_exists($tpl_fake_404)) {
+      $this->print_error("SecPlus-PHP resource files not found.\naborting...");
       die();
     }
 
-    $view_src = file_get_contents($view_tpl);
+    $view_src = file_get_contents($tpl_fake_404) . "\n\n" . file_get_contents($view_tpl);
     $view_src = str_replace("{#view_name#}", $viewName, $view_src);
 
     if (empty($view_src)) {
@@ -1062,14 +1186,16 @@ class CreateCommand extends ShellCmd {
     $daoName = $voName . 'DAO';
     $dao_src = "";
 
+    $dao_tpl_fake_404 = dirname($_SERVER['SCRIPT_FILENAME']) . '/tpl/fake_404.tpl';
     $dao_tpl_fname = dirname($_SERVER['SCRIPT_FILENAME']) . '/tpl/dao.tpl';
 
-    if (!file_exists($dao_tpl_fname)) {
-      $this->print_error("SecPlus-PHP resource file '$dao_tpl_fname' not found.\naborting...");
+    if (!file_exists($dao_tpl_fname) || !file_exists($dao_tpl_fake_404)) {
+      $this->print_error("SecPlus-PHP resource files not found.\naborting...");
       die();
     }
 
-    $dao_tpl_content = file_get_contents($dao_tpl_fname);
+    $dao_tpl_fake = file_get_contents($dao_tpl_fake_404);
+    $dao_tpl_content = $dao_tpl_fake_404 . "\n\n" . file_get_contents($dao_tpl_fname);
 
     $dao_src = str_replace("{#vo_include#}",
                            str_replace($this->config->getRootProjectDir() . '/', "", $this->config->getVoDir() . '/' . $voName . '.php'),
@@ -1247,6 +1373,7 @@ class Shell {
     }
     
     $class = new $classname($this->config, dirname($this->config_file));
+    $class->setConfig($this->config);
     $class->setConfigFile($this->config_file);
 
     if (!method_exists($class, $action)) {      
@@ -1266,6 +1393,21 @@ class Shell {
   public static function write($str) {
     fwrite(STDOUT, $str, strlen($str));
   }
+
+  public static function getFiles($dir) {
+    return new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir),
+                                          \RecursiveIteratorIterator::CHILD_FIRST);
+  }
+
+  public static function deleteFiles($paths = array()) {
+    foreach ($paths as $p) {
+      print "Deleting '" . $p . "'\n";
+      if (unlink($p) == FALSE) {
+        print "Failed to delete file '" . $p . "'\n";
+      }
+    }
+  }
+
 }
 
 if (php_sapi_name() == "cli") {
