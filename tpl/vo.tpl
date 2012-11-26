@@ -1,6 +1,6 @@
 <?php
 
-class {#value_object#} extends SecPlus\ValueObject {
+class {#value_object#} extends SecPlus\AbstractValueObject {
 
 }
 
