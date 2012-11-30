@@ -9,7 +9,10 @@ class Upload {
     $config = Config::getInstance();
     $base_path = $config->getImageUploadPath();
 
-	  if (preg_match("/\.(gif|bmp|png|jpg|jpeg){1}$/i", $file["name"], $ext)){
+    $test_extension = preg_match("/\.(gif|bmp|png|jpg|jpeg){1}$/i", $file["name"], $ext);
+    $test_filetype = getimagesize($file["tmp_name"]);
+
+	  if ($test_extension && $test_filetype){
       $filename = md5(uniqid(time())) . "." . $ext[1];
 	    $filepath = $base_path . $filename;
 	    move_uploaded_file($file["tmp_name"], $filepath);

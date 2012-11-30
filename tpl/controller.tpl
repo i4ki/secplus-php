@@ -12,9 +12,10 @@ class {#controller_name#}Controller extends SecPlus\AbstractController {
         action IF and only IF the method appear in the safeActions property.
         For use the method 'view' as a action, you need to add it to the array.
       */
-     $this->handleAction();
 
      $this->safe_actions[] = 'view';
+     
+     $this->handleAction();
   }
 
   public function view() {
